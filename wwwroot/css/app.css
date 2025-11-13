@@ -21,7 +21,6 @@ a, .btn-link {
     padding-top: 1.1rem;
 }
 
-/*#endif*/
 h1:focus {
     outline: none;
 }
@@ -99,7 +98,7 @@ h1:focus {
     background-color: #007bff;
     color: white;
 }
-/* Nav menu: make plain white and use dark text */
+
 .top-row.navbar,
 .top-row.navbar .container-fluid,
 .nav-scrollable {
@@ -108,7 +107,7 @@ h1:focus {
     box-shadow: none !important;
 }
 
-/* Ensure brand and nav links are dark on white */
+
 .top-row .navbar-brand,
 .top-row .nav-link,
 .top-row a,
@@ -116,12 +115,12 @@ h1:focus {
     color: #222222 !important;
 }
 
-/* Toggler contrast */
+
 .navbar-toggler {
     filter: none !important;
 }
 
-/* Modern Sidebar Nav - Clean Design */
+
 .sidebar {
     height: 100vh;
     width: 260px;
@@ -159,14 +158,12 @@ h1:focus {
 .sidebar .logo {
     width: 60px;
     height: 60px;
-    border-radius: 12px;
-    object-fit: cover;
+    object-fit: contain;
     display: block;
     margin: 0 auto;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* Nav links container */
+
 .sidebar .nav {
     padding: 1.5rem 1rem;
     flex: 1;
@@ -174,7 +171,6 @@ h1:focus {
     flex-direction: column;
 }
 
-/* Nav links */
 .sidebar .nav-link {
     color: #4b5563;
     font-weight: 500;
@@ -198,7 +194,7 @@ h1:focus {
         transition: color 0.2s ease;
     }
 
-    /* Hover state */
+   
     .sidebar .nav-link:hover {
         background-color: #f9fafb;
         color: #111827;
@@ -209,7 +205,7 @@ h1:focus {
             color: #111827;
         }
 
-    /* Active state */
+    
     .sidebar .nav-link.active {
         background-color: #2563eb;
         color: #ffffff;
@@ -232,7 +228,6 @@ h1:focus {
             border-radius: 0 2px 2px 0;
         }
 
-/* Logout button */
 .logout-btn {
     background: #f9fafb;
     border: 1px solid #e5e7eb;
@@ -267,7 +262,7 @@ h1:focus {
             color: #111827;
         }
 
-/* Adjust main content to account for sidebar */
+
 .page main {
     margin-left: 260px;
     transition: margin-left 0.2s ease;
@@ -276,12 +271,12 @@ h1:focus {
     width: calc(100% - 260px);
 }
 
-/* Content padding adjustments */
+
 .content {
     padding: 1.5rem;
 }
 
-/* Tablet adjustments */
+
 @media (max-width: 1024px) and (min-width: 769px) {
     .sidebar {
         width: 240px;
@@ -297,7 +292,6 @@ h1:focus {
     }
 }
 
-/* Mobile behavior: sidebar hidden */
 @media (max-width: 768px) {
     .sidebar {
         left: -260px;
@@ -309,7 +303,6 @@ h1:focus {
             left: 0;
         }
 
-    /* Mobile overlay when sidebar is open */
     .sidebar.open::before {
         content: '';
         position: fixed;
@@ -355,7 +348,7 @@ h1:focus {
     }
 }
 
-/* Small mobile adjustments */
+
 @media (max-width: 480px) {
     .content {
         padding: 0.75rem;
