@@ -1,116 +1,813 @@
 @page "/reservations"
 
-<h3>Reservation Management</h3>
+<div class="rooms-container">
+    <div class="rooms-header mb-4">
+        <div>
+            <h1 class="rooms-title">Reservation Management</h1>
+            <p class="rooms-subtitle">Create, update, and manage room reservations</p>
+        </div>
+    </div>
 
-<div class="card p-4 mt-3 shadow-sm">
-    <h5>Add New Reservation</h5>
-    <div class="row g-3 mt-2">
-        <div class="col-md-4">
-            <input type="text" class="form-control" placeholder="Guest Name" @bind="guestName" />
+    <div class="rooms-card mb-4">
+        <div class="rooms-card-header">
+            <h3 class="rooms-card-title">
+                <i class="bi bi-plus-circle me-2"></i>
+                @(reservationModel.Id == 0 ? "Add New Reservation" : "Update Reservation")
+            </h3>
         </div>
-        <div class="col-md-3">
-            <input type="text" class="form-control" placeholder="Room Name" @bind="roomName" />
+        <div class="rooms-card-body">
+            <EditForm Model="@reservationModel" OnValidSubmit="SaveReservation">
+                <DataAnnotationsValidator />
+                <ValidationSummary class="validation-summary" />
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="bi bi-door-closed me-2"></i>
+                                Room <span class="text-danger">*</span>
+                            </label>
+                            <InputSelect class="form-control-modern" @bind-Value="reservationModel.RoomName">
+                                <option value="">Select room</option>
+                                @foreach (var room in availableRooms)
+                                {
+                                    <option value="@room">@room</option>
+                                }
+                            </InputSelect>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="bi bi-person me-2"></i>
+                                Customer Name <span class="text-danger">*</span>
+                            </label>
+                            <InputText class="form-control-modern" @bind-Value="reservationModel.CustomerName" placeholder="Enter customer name" />
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="bi bi-telephone me-2"></i>
+                                Contact Number <span class="text-danger">*</span>
+                            </label>
+                            <InputText class="form-control-modern" @bind-Value="reservationModel.ContactNumber" placeholder="Enter contact number" />
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="bi bi-envelope me-2"></i>
+                                Email
+                            </label>
+                            <InputText type="email" class="form-control-modern" @bind-Value="reservationModel.Email" placeholder="Enter email (optional)" />
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="bi bi-circle-fill me-2"></i>
+                                Status <span class="text-danger">*</span>
+                            </label>
+                            <InputSelect class="form-control-modern" @bind-Value="reservationModel.Status">
+                                <option value="">Select status</option>
+                                <option value="Reserved">Reserved</option>
+                                <option value="Checked-in">Checked-in</option>
+                                <option value="Cancelled">Cancelled</option>
+                            </InputSelect>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="bi bi-calendar-check me-2"></i>
+                                Check-In Date <span class="text-danger">*</span>
+                            </label>
+                            <InputDate class="form-control-modern" @bind-Value="reservationModel.CheckInDate" />
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="bi bi-calendar-x me-2"></i>
+                                Check-Out Date <span class="text-danger">*</span>
+                            </label>
+                            <InputDate class="form-control-modern" @bind-Value="reservationModel.CheckOutDate" />
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="bi bi-hash me-2"></i>
+                                Reservation ID
+                            </label>
+                            <InputNumber class="form-control-modern" @bind-Value="reservationModel.Id" disabled />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions mt-4">
+                    @if (reservationModel.Id == 0)
+                    {
+                        <button class="btn-modern btn-primary-modern" type="submit">
+                            <i class="bi bi-plus-circle me-2"></i>
+                            Add Reservation
+                        </button>
+                    }
+                    else
+                    {
+                        <button class="btn-modern btn-primary-modern" type="submit">
+                            <i class="bi bi-pencil-square me-2"></i>
+                            Update Reservation
+                        </button>
+                    }
+                    <button class="btn-modern btn-secondary-modern" type="button" @onclick="ClearForm">
+                        <i class="bi bi-x-circle me-2"></i>
+                        Clear
+                    </button>
+                </div>
+            </EditForm>
         </div>
-        <div class="col-md-2">
-            <input type="date" class="form-control" @bind="checkInDate" />
+    </div>
+
+    <div class="rooms-card mb-4">
+        <div class="rooms-card-body">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-5">
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="bi bi-search me-2"></i>
+                            Search Reservations
+                        </label>
+                        <div class="search-wrapper">
+                            <i class="bi bi-search search-icon"></i>
+                            <InputText class="form-control-modern search-input" @bind-Value="searchQuery" @oninput="FilterReservations" placeholder="Search by customer name, room, or status..." />
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="bi bi-funnel me-2"></i>
+                            Filter by Status
+                        </label>
+                        <InputSelect class="form-control-modern" @bind-Value="statusFilter" @onchange="FilterReservations">
+                            <option value="">All Status</option>
+                            <option value="Reserved">Reserved</option>
+                            <option value="Checked-in">Checked-in</option>
+                            <option value="Cancelled">Cancelled</option>
+                        </InputSelect>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="bi bi-calendar me-2"></i>
+                            Filter by Date
+                        </label>
+                        <InputDate class="form-control-modern" @bind-Value="dateFilter" @onchange="FilterReservations" />
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <button class="btn-modern btn-outline-modern w-100" type="button" @onclick="ClearFilters">
+                        <i class="bi bi-arrow-counterclockwise me-2"></i>
+                        Reset
+                    </button>
+                </div>
+            </div>
         </div>
-        <div class="col-md-2">
-            <input type="date" class="form-control" @bind="checkOutDate" />
+    </div>
+
+    <div class="rooms-card">
+        <div class="rooms-card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <h3 class="rooms-card-title">
+                    <i class="bi bi-list-ul me-2"></i>
+                    Reservation List
+                    <span class="badge-modern">@filteredReservationList.Count</span>
+                </h3>
+            </div>
         </div>
-        <div class="col-md-1 d-flex align-items-center">
-            <button class="btn btn-success w-100" @onclick="AddReservation">Add</button>
+        <div class="rooms-card-body">
+            @if (filteredReservationList.Count == 0)
+            {
+                <div class="empty-state">
+                    <i class="bi bi-inbox"></i>
+                    <h4>No reservations found</h4>
+                    <p>@(reservationList.Count == 0 ? "Get started by adding your first reservation." : "Try adjusting your search or filter criteria.")</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-wrapper">
+                    <table class="table-modern">
+                        <thead>
+                            <tr>
+                                <th>Reservation ID</th>
+                                <th>Room Name</th>
+                                <th>Customer Name</th>
+                                <th>Contact</th>
+                                <th>Check-in</th>
+                                <th>Check-out</th>
+                                <th>Status</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var reservation in filteredReservationList)
+                            {
+                                <tr class="@GetStatusRowClass(reservation.Status)">
+                                    <td><strong>#@reservation.Id</strong></td>
+                                    <td>@reservation.RoomName</td>
+                                    <td>@reservation.CustomerName</td>
+                                    <td>@reservation.ContactNumber</td>
+                                    <td>@reservation.CheckInDate.ToString("MM/dd/yyyy")</td>
+                                    <td>@reservation.CheckOutDate.ToString("MM/dd/yyyy")</td>
+                                    <td>
+                                        <span class="status-badge @GetStatusBadgeClass(reservation.Status)">
+                                            <i class="bi bi-circle-fill me-1"></i>
+                                            @reservation.Status
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <button class="btn-action btn-edit" @onclick="() => EditReservation(reservation)" title="Edit">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </button>
+                                            <button class="btn-action btn-delete" @onclick="() => DeleteReservation(reservation)" title="Delete">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
         </div>
     </div>
 </div>
 
-<div class="mt-4">
-    <h5>Current Reservations</h5>
-
-    @if (reservations.Count == 0)
-    {
-        <p class="text-secondary">No reservations yet.</p>
-    }
-    else
-    {
-        <div class="table-responsive">
-            <table class="table table-striped mt-2">
-            <thead class="table-light">
-                <tr>
-                    <th>Guest Name</th>
-                    <th>Room</th>
-                    <th>Check-In</th>
-                    <th>Check-Out</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var res in reservations)
-                {
-                    <tr>
-                        <td>@res.GuestName</td>
-                        <td>@res.RoomName</td>
-                        <td>@res.CheckInDate.ToShortDateString()</td>
-                        <td>@res.CheckOutDate.ToShortDateString()</td>
-                        <td>
-                            <span class="badge bg-@(res.Status == "Active" ? "success" : "secondary")">@res.Status</span>
-                        </td>
-                        <td>
-                            @if (res.Status == "Active")
-                            {
-                                <button class="btn btn-danger btn-sm" @onclick="() => CancelReservation(res)">Cancel</button>
-                            }
-                            else
-                            {
-                                <button class="btn btn-secondary btn-sm" disabled>Cancelled</button>
-                            }
-                        </td>
-                    </tr>
-                }
-            </tbody>
-            </table>
-        </div>
-    }
-</div>
-
 @code {
-    private List<Reservation> reservations = new();
-    private string guestName = string.Empty;
-    private string roomName = string.Empty;
-    private DateTime checkInDate = DateTime.Today;
-    private DateTime checkOutDate = DateTime.Today.AddDays(1);
+    private ReservationModel reservationModel = new();
+    private List<ReservationModel> reservationList = new();
+    private List<ReservationModel> filteredReservationList = new();
+    private List<string> availableRooms = new();
+    private string searchQuery = string.Empty;
+    private string statusFilter = string.Empty;
+    private DateTime? dateFilter;
 
-    private void AddReservation()
+    private int nextId = 1;
+
+    protected override void OnInitialized()
     {
-        if (!string.IsNullOrWhiteSpace(guestName) && !string.IsNullOrWhiteSpace(roomName))
+        availableRooms = new List<string>
         {
-            reservations.Add(new Reservation
-            {
-                GuestName = guestName,
-                RoomName = roomName,
-                CheckInDate = checkInDate,
-                CheckOutDate = checkOutDate,
-                Status = "Active"
-            });
+            "Conference Room A",
+            "Conference Room B",
+            "Meeting Room 101",
+            "Meeting Room 102",
+            "Training Room 1",
+            "Training Room 2",
+            "Event Hall",
+            "Workspace Alpha",
+            "Lounge Area"
+        };
+        filteredReservationList = reservationList;
+    }
 
-            guestName = string.Empty;
-            roomName = string.Empty;
-            checkInDate = DateTime.Today;
-            checkOutDate = DateTime.Today.AddDays(1);
+    private void SaveReservation()
+    {
+        if (reservationModel.Id == 0)
+        {
+            reservationModel.Id = nextId++;
+            reservationModel.CreatedAt = DateTime.Now;
+            reservationModel.UpdatedAt = DateTime.Now;
+            if (string.IsNullOrEmpty(reservationModel.Status))
+            {
+                reservationModel.Status = "Reserved";
+            }
+            reservationList.Add(new ReservationModel
+            {
+                Id = reservationModel.Id,
+                RoomName = reservationModel.RoomName,
+                CustomerName = reservationModel.CustomerName,
+                ContactNumber = reservationModel.ContactNumber,
+                Email = reservationModel.Email,
+                CheckInDate = reservationModel.CheckInDate,
+                CheckOutDate = reservationModel.CheckOutDate,
+                Status = reservationModel.Status,
+                CreatedAt = reservationModel.CreatedAt,
+                UpdatedAt = reservationModel.UpdatedAt
+            });
+        }
+        else
+        {
+            var existing = reservationList.FirstOrDefault(r => r.Id == reservationModel.Id);
+            if (existing != null)
+            {
+                existing.RoomName = reservationModel.RoomName;
+                existing.CustomerName = reservationModel.CustomerName;
+                existing.ContactNumber = reservationModel.ContactNumber;
+                existing.Email = reservationModel.Email;
+                existing.CheckInDate = reservationModel.CheckInDate;
+                existing.CheckOutDate = reservationModel.CheckOutDate;
+                existing.Status = reservationModel.Status;
+                existing.UpdatedAt = DateTime.Now;
+            }
+        }
+
+        ClearForm();
+        FilterReservations();
+    }
+
+    private void EditReservation(ReservationModel reservation)
+    {
+        reservationModel = new ReservationModel
+        {
+            Id = reservation.Id,
+            RoomName = reservation.RoomName,
+            CustomerName = reservation.CustomerName,
+            ContactNumber = reservation.ContactNumber,
+            Email = reservation.Email,
+            CheckInDate = reservation.CheckInDate,
+            CheckOutDate = reservation.CheckOutDate,
+            Status = reservation.Status,
+            CreatedAt = reservation.CreatedAt,
+            UpdatedAt = reservation.UpdatedAt
+        };
+    }
+
+    private void DeleteReservation(ReservationModel reservation)
+    {
+        reservationList.Remove(reservation);
+        FilterReservations();
+    }
+
+    private void ClearForm()
+    {
+        reservationModel = new ReservationModel
+        {
+            CheckInDate = DateTime.Today,
+            CheckOutDate = DateTime.Today.AddDays(1)
+        };
+    }
+
+    private void FilterReservations()
+    {
+        filteredReservationList = reservationList.Where(res =>
+            (string.IsNullOrEmpty(searchQuery) ||
+             res.CustomerName.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+             res.RoomName.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+             res.Status.Contains(searchQuery, StringComparison.OrdinalIgnoreCase)) &&
+            (string.IsNullOrEmpty(statusFilter) || res.Status == statusFilter) &&
+            (!dateFilter.HasValue || 
+             (res.CheckInDate <= dateFilter.Value && res.CheckOutDate >= dateFilter.Value))
+        ).ToList();
+    }
+
+    private void ClearFilters()
+    {
+        searchQuery = string.Empty;
+        statusFilter = string.Empty;
+        dateFilter = null;
+        FilterReservations();
+    }
+
+    private string GetStatusBadgeClass(string status)
+    {
+        return status switch
+        {
+            "Reserved" => "status-reserved",
+            "Checked-in" => "status-checkedin",
+            "Cancelled" => "status-cancelled",
+            _ => ""
+        };
+    }
+
+    private string GetStatusRowClass(string status)
+    {
+        return status switch
+        {
+            "Reserved" => "row-reserved",
+            "Checked-in" => "row-checkedin",
+            "Cancelled" => "row-cancelled",
+            _ => ""
+        };
+    }
+
+    public class ReservationModel
+    {
+        public int Id { get; set; }
+        public string RoomName { get; set; } = string.Empty;
+        public string CustomerName { get; set; } = string.Empty;
+        public string ContactNumber { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public DateTime CheckInDate { get; set; } = DateTime.Today;
+        public DateTime CheckOutDate { get; set; } = DateTime.Today.AddDays(1);
+        public string Status { get; set; } = "Reserved";
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime UpdatedAt { get; set; } = DateTime.Now;
+    }
+}
+
+<style>
+    .rooms-container {
+        padding: 2rem 0;
+    }
+
+    .rooms-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+
+    .rooms-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 0.5rem;
+        letter-spacing: -0.02em;
+    }
+
+    .rooms-subtitle {
+        font-size: 1rem;
+        color: #6b7280;
+        margin: 0;
+    }
+
+    .rooms-card {
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e5e7eb;
+        overflow: hidden;
+    }
+
+    .rooms-card-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid #f3f4f6;
+        background: #fafafa;
+    }
+
+    .rooms-card-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #111827;
+        margin: 0;
+        display: flex;
+        align-items: center;
+    }
+
+    .rooms-card-body {
+        padding: 1.5rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-control-modern {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        font-size: 0.9375rem;
+        background: #ffffff;
+        transition: all 0.2s ease;
+        outline: none;
+    }
+
+    .form-control-modern:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .form-control-modern:disabled {
+        background: #f9fafb;
+        color: #9ca3af;
+        cursor: not-allowed;
+    }
+
+    .search-wrapper {
+        position: relative;
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #9ca3af;
+        z-index: 1;
+    }
+
+    .search-input {
+        padding-left: 2.75rem;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-modern {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 10px;
+        font-size: 0.9375rem;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        outline: none;
+    }
+
+    .btn-primary-modern {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: #ffffff;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-primary-modern:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary-modern {
+        background: #f3f4f6;
+        color: #374151;
+        border: 2px solid #e5e7eb;
+    }
+
+    .btn-secondary-modern:hover {
+        background: #e9ecef;
+        border-color: #d1d5db;
+    }
+
+    .btn-outline-modern {
+        background: #ffffff;
+        color: #667eea;
+        border: 2px solid #667eea;
+    }
+
+    .btn-outline-modern:hover {
+        background: #667eea;
+        color: #ffffff;
+    }
+
+    .validation-summary {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        color: #dc2626;
+        padding: 1rem;
+        border-radius: 10px;
+        margin-bottom: 1.5rem;
+        font-size: 0.875rem;
+        list-style: none;
+    }
+
+    .badge-modern {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.75rem;
+        background: #e5e7eb;
+        color: #374151;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-left: 0.5rem;
+    }
+
+    .table-wrapper {
+        overflow-x: auto;
+    }
+
+    .table-modern {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .table-modern thead {
+        background: #f9fafb;
+    }
+
+    .table-modern th {
+        padding: 1rem;
+        text-align: left;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #374151;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border-bottom: 2px solid #e5e7eb;
+    }
+
+    .table-modern td {
+        padding: 1rem;
+        border-bottom: 1px solid #f3f4f6;
+        font-size: 0.9375rem;
+        color: #111827;
+    }
+
+    .table-modern tbody tr {
+        transition: background-color 0.2s ease;
+    }
+
+    .table-modern tbody tr:hover {
+        background: #f9fafb;
+    }
+
+    .row-reserved {
+        background: rgba(37, 99, 235, 0.05);
+    }
+
+    .row-reserved:hover {
+        background: rgba(37, 99, 235, 0.1);
+    }
+
+    .row-checkedin {
+        background: rgba(16, 185, 129, 0.05);
+    }
+
+    .row-checkedin:hover {
+        background: rgba(16, 185, 129, 0.1);
+    }
+
+    .row-cancelled {
+        background: rgba(239, 68, 68, 0.05);
+    }
+
+    .row-cancelled:hover {
+        background: rgba(239, 68, 68, 0.1);
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-size: 0.8125rem;
+        font-weight: 500;
+    }
+
+    .status-reserved {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    .status-checkedin {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .status-cancelled {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .status-badge i {
+        font-size: 0.5rem;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: center;
+    }
+
+    .btn-action {
+        width: 36px;
+        height: 36px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        font-size: 1rem;
+    }
+
+    .btn-edit {
+        background: #e0e7ff;
+        color: #4338ca;
+    }
+
+    .btn-edit:hover {
+        background: #c7d2fe;
+        transform: translateY(-2px);
+    }
+
+    .btn-delete {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+    .btn-delete:hover {
+        background: #fecaca;
+        transform: translateY(-2px);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: #9ca3af;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        display: block;
+        opacity: 0.5;
+    }
+
+    .empty-state h4 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-state p {
+        margin: 0;
+        font-size: 0.9375rem;
+    }
+
+    @@media (max-width: 1200px) {
+        .table-modern {
+            font-size: 0.875rem;
+        }
+
+        .table-modern th,
+        .table-modern td {
+            padding: 0.75rem;
         }
     }
 
-    private void CancelReservation(Reservation res)
-    {
-        res.Status = "Cancelled";
+    @@media (max-width: 992px) {
+        .rooms-container {
+            padding: 1.5rem 0;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        .table-modern {
+            min-width: 1000px;
+        }
     }
 
-    private class Reservation
-    {
-        public string GuestName { get; set; } = string.Empty;
-        public string RoomName { get; set; } = string.Empty;
-        public DateTime CheckInDate { get; set; }
-        public DateTime CheckOutDate { get; set; }
-        public string Status { get; set; } = "Active";
+    @@media (max-width: 768px) {
+        .rooms-title {
+            font-size: 1.75rem;
+        }
+
+        .rooms-card-body {
+            padding: 1rem;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .btn-modern {
+            width: 100%;
+        }
     }
-}
+
+    @@media (max-width: 480px) {
+        .rooms-container {
+            padding: 1rem 0;
+        }
+
+        .rooms-title {
+            font-size: 1.5rem;
+        }
+
+        .rooms-card-header,
+        .rooms-card-body {
+            padding: 1rem;
+        }
+    }
+</style>
