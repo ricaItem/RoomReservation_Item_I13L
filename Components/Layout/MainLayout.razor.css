@@ -41,7 +41,6 @@ main {
             text-overflow: ellipsis;
         }
 
-/* Mobile and small screens */
 @media (max-width: 640.98px) {
     .top-row {
         justify-content: space-between;
@@ -55,7 +54,6 @@ main {
         }
 }
 
-/* Tablet */
 @media (min-width: 641px) and (max-width: 1024px) {
     .page {
         flex-direction: row;
@@ -80,7 +78,6 @@ main {
     }
 }
 
-/* Desktop */
 @media (min-width: 1025px) {
     .page {
         flex-direction: row;

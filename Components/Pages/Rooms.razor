@@ -1,82 +1,277 @@
 @page "/rooms"
 
-<h3 class="mb-4 fw-bold text-primary">Room Management</h3>
+<div class="rooms-container">
+    <div class="rooms-header mb-4">
+        <div>
+            <h1 class="rooms-title">Room Management</h1>
+            <p class="rooms-subtitle">Create, update, and manage your room inventory</p>
+        </div>
+    </div>
 
-<div class="card shadow-sm p-4 mb-4">
-    <EditForm Model="@roomModel" OnValidSubmit="SaveRoom">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
+    <div class="rooms-card mb-4">
+        <div class="rooms-card-header">
+            <h3 class="rooms-card-title">
+                <i class="bi bi-plus-circle me-2"></i>
+                @(roomModel.Id == 0 ? "Add New Room" : "Update Room")
+            </h3>
+        </div>
+        <div class="rooms-card-body">
+            <EditForm Model="@roomModel" OnValidSubmit="SaveRoom">
+                <DataAnnotationsValidator />
+                <ValidationSummary class="validation-summary" />
 
-        <div class="row g-3">
-            <div class="col-md-4">
-                <label>Room Number</label>
-                <InputText class="form-control" @bind-Value="roomModel.RoomNumber" />
-            </div>
-            <div class="col-md-4">
-                <label>Room Type</label>
-                <InputText class="form-control" @bind-Value="roomModel.RoomType" />
-            </div>
-            <div class="col-md-4">
-                <label>Capacity</label>
-                <InputNumber class="form-control" @bind-Value="roomModel.Capacity" />
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="bi bi-door-closed me-2"></i>
+                                Room Name <span class="text-danger">*</span>
+                            </label>
+                            <InputText class="form-control-modern" @bind-Value="roomModel.RoomName" placeholder="Enter room name" />
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="bi bi-tags me-2"></i>
+                                Room Type <span class="text-danger">*</span>
+                            </label>
+                            <InputSelect class="form-control-modern" @bind-Value="roomModel.RoomType">
+                                <option value="">Select room type</option>
+                                <option value="Conference Room">Conference Room</option>
+                                <option value="Meeting Room">Meeting Room</option>
+                                <option value="Training Room">Training Room</option>
+                                <option value="Event Hall">Event Hall</option>
+                                <option value="Workspace">Workspace</option>
+                                <option value="Lounge">Lounge</option>
+                                <option value="Office">Office</option>
+                            </InputSelect>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="bi bi-people me-2"></i>
+                                Capacity <span class="text-danger">*</span>
+                            </label>
+                            <InputNumber class="form-control-modern" @bind-Value="roomModel.Capacity" placeholder="Enter capacity" />
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="bi bi-circle-fill me-2"></i>
+                                Status <span class="text-danger">*</span>
+                            </label>
+                            <InputSelect class="form-control-modern" @bind-Value="roomModel.Status">
+                                <option value="">Select status</option>
+                                <option value="Available">Available</option>
+                                <option value="Not Available">Not Available</option>
+                            </InputSelect>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="bi bi-hash me-2"></i>
+                                Room ID
+                            </label>
+                            <InputNumber class="form-control-modern" @bind-Value="roomModel.Id" disabled />
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="bi bi-file-text me-2"></i>
+                                Description
+                            </label>
+                            <InputTextArea class="form-control-modern" @bind-Value="roomModel.Description" rows="3" placeholder="Enter room description (optional)" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions mt-4">
+                    @if (roomModel.Id == 0)
+                    {
+                        <button class="btn-modern btn-primary-modern" type="submit">
+                            <i class="bi bi-plus-circle me-2"></i>
+                            Add Room
+                        </button>
+                    }
+                    else
+                    {
+                        <button class="btn-modern btn-primary-modern" type="submit">
+                            <i class="bi bi-pencil-square me-2"></i>
+                            Update Room
+                        </button>
+                    }
+                    <button class="btn-modern btn-secondary-modern" type="button" @onclick="ClearForm">
+                        <i class="bi bi-x-circle me-2"></i>
+                        Clear
+                    </button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+
+    <div class="rooms-card mb-4">
+        <div class="rooms-card-body">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="bi bi-search me-2"></i>
+                            Search Rooms
+                        </label>
+                        <div class="search-wrapper">
+                            <i class="bi bi-search search-icon"></i>
+                            <InputText class="form-control-modern search-input" @bind-Value="searchQuery" @oninput="FilterRooms" placeholder="Search by room name or type..." />
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="bi bi-funnel me-2"></i>
+                            Filter by Status
+                        </label>
+                        <InputSelect class="form-control-modern" @bind-Value="statusFilter" @onchange="FilterRooms">
+                            <option value="">All Status</option>
+                            <option value="Available">Available</option>
+                            <option value="Not Available">Not Available</option>
+                        </InputSelect>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <button class="btn-modern btn-outline-modern w-100" type="button" @onclick="ClearFilters">
+                        <i class="bi bi-arrow-counterclockwise me-2"></i>
+                        Reset
+                    </button>
+                </div>
             </div>
         </div>
+    </div>
 
-        <div class="mt-4 d-flex gap-2 flex-wrap">
-            <button class="btn btn-success" type="submit">Add / Update</button>
-            <button class="btn btn-danger" type="button" @onclick="() => DeleteRoom(roomModel)">Delete</button>
-            <button class="btn btn-secondary" type="button" @onclick="ClearForm">Clear</button>
+    <div class="rooms-card">
+        <div class="rooms-card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <h3 class="rooms-card-title">
+                    <i class="bi bi-list-ul me-2"></i>
+                    Room List
+                    <span class="badge-modern">@filteredRoomList.Count</span>
+                </h3>
+            </div>
         </div>
-    </EditForm>
-</div>
-
-<div class="card shadow-sm p-4">
-    <h5 class="mb-3">Room List</h5>
-    <div class="table-responsive">
-        <table class="table table-striped align-middle">
-        <thead class="table-primary">
-            <tr>
-                <th>Room Number</th>
-                <th>Type</th>
-                <th>Capacity</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var room in roomList)
+        <div class="rooms-card-body">
+            @if (filteredRoomList.Count == 0)
             {
-                <tr>
-                    <td>@room.RoomNumber</td>
-                    <td>@room.RoomType</td>
-                    <td>@room.Capacity</td>
-                    <td>
-                        <button class="btn btn-sm btn-outline-primary" @onclick="() => EditRoom(room)">Edit</button>
-                        <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteRoom(room)">Delete</button>
-                    </td>
-                </tr>
+                <div class="empty-state">
+                    <i class="bi bi-inbox"></i>
+                    <h4>No rooms found</h4>
+                    <p>@(roomList.Count == 0 ? "Get started by adding your first room." : "Try adjusting your search or filter criteria.")</p>
+                </div>
             }
-            </tbody>
-        </table>
+            else
+            {
+                <div class="table-wrapper">
+                    <table class="table-modern">
+                        <thead>
+                            <tr>
+                                <th>Room ID</th>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Capacity</th>
+                                <th>Status</th>
+                                <th>Description</th>
+                                <th>Created At</th>
+                                <th>Updated At</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var room in filteredRoomList)
+                            {
+                                <tr>
+                                    <td><strong>#@room.Id</strong></td>
+                                    <td>@room.RoomName</td>
+                                    <td>
+                                        <span class="badge-type">@room.RoomType</span>
+                                    </td>
+                                    <td>
+                                        <span class="capacity-badge">
+                                            <i class="bi bi-people me-1"></i>
+                                            @room.Capacity
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="status-badge @(room.Status == "Available" ? "status-available" : "status-unavailable")">
+                                            <i class="bi bi-circle-fill me-1"></i>
+                                            @room.Status
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="description-text" title="@room.Description">
+                                            @(string.IsNullOrEmpty(room.Description) ? "-" : (room.Description.Length > 50 ? room.Description.Substring(0, 50) + "..." : room.Description))
+                                        </span>
+                                    </td>
+                                    <td>@room.CreatedAt.ToString("MM/dd/yyyy")</td>
+                                    <td>@room.UpdatedAt.ToString("MM/dd/yyyy")</td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <button class="btn-action btn-edit" @onclick="() => EditRoom(room)" title="Edit">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </button>
+                                            <button class="btn-action btn-delete" @onclick="() => DeleteRoom(room)" title="Delete">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
     </div>
 </div>
 
 @code {
     private RoomModel roomModel = new();
     private List<RoomModel> roomList = new();
+    private List<RoomModel> filteredRoomList = new();
+    private string searchQuery = string.Empty;
+    private string statusFilter = string.Empty;
 
     private int nextId = 1;
+
+    protected override void OnInitialized()
+    {
+        filteredRoomList = roomList;
+    }
 
     private void SaveRoom()
     {
         if (roomModel.Id == 0)
         {
             roomModel.Id = nextId++;
+            roomModel.CreatedAt = DateTime.Now;
+            roomModel.UpdatedAt = DateTime.Now;
             roomList.Add(new RoomModel
             {
                 Id = roomModel.Id,
-                RoomNumber = roomModel.RoomNumber,
+                RoomName = roomModel.RoomName,
                 RoomType = roomModel.RoomType,
-                Capacity = roomModel.Capacity
+                Capacity = roomModel.Capacity,
+                Status = roomModel.Status,
+                Description = roomModel.Description,
+                CreatedAt = roomModel.CreatedAt,
+                UpdatedAt = roomModel.UpdatedAt
             });
         }
         else
@@ -84,13 +279,17 @@
             var existing = roomList.FirstOrDefault(r => r.Id == roomModel.Id);
             if (existing != null)
             {
-                existing.RoomNumber = roomModel.RoomNumber;
+                existing.RoomName = roomModel.RoomName;
                 existing.RoomType = roomModel.RoomType;
                 existing.Capacity = roomModel.Capacity;
+                existing.Status = roomModel.Status;
+                existing.Description = roomModel.Description;
+                existing.UpdatedAt = DateTime.Now;
             }
         }
 
         ClearForm();
+        FilterRooms();
     }
 
     private void EditRoom(RoomModel room)
@@ -98,15 +297,20 @@
         roomModel = new RoomModel
         {
             Id = room.Id,
-            RoomNumber = room.RoomNumber,
+            RoomName = room.RoomName,
             RoomType = room.RoomType,
-            Capacity = room.Capacity
+            Capacity = room.Capacity,
+            Status = room.Status,
+            Description = room.Description,
+            CreatedAt = room.CreatedAt,
+            UpdatedAt = room.UpdatedAt
         };
     }
 
     private void DeleteRoom(RoomModel room)
     {
         roomList.Remove(room);
+        FilterRooms();
     }
 
     private void ClearForm()
@@ -114,11 +318,425 @@
         roomModel = new RoomModel();
     }
 
+    private void FilterRooms()
+    {
+        filteredRoomList = roomList.Where(room =>
+            (string.IsNullOrEmpty(searchQuery) ||
+             room.RoomName.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+             room.RoomType.Contains(searchQuery, StringComparison.OrdinalIgnoreCase)) &&
+            (string.IsNullOrEmpty(statusFilter) || room.Status == statusFilter)
+        ).ToList();
+    }
+
+    private void ClearFilters()
+    {
+        searchQuery = string.Empty;
+        statusFilter = string.Empty;
+        FilterRooms();
+    }
+
     public class RoomModel
     {
         public int Id { get; set; }
-        public string RoomNumber { get; set; } = string.Empty;
+        public string RoomName { get; set; } = string.Empty;
         public string RoomType { get; set; } = string.Empty;
         public int Capacity { get; set; }
+        public string Status { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime UpdatedAt { get; set; } = DateTime.Now;
     }
 }
+
+<style>
+    .rooms-container {
+        padding: 2rem 0;
+    }
+
+    .rooms-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+
+    .rooms-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 0.5rem;
+        letter-spacing: -0.02em;
+    }
+
+    .rooms-subtitle {
+        font-size: 1rem;
+        color: #6b7280;
+        margin: 0;
+    }
+
+    .rooms-card {
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e5e7eb;
+        overflow: hidden;
+    }
+
+    .rooms-card-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid #f3f4f6;
+        background: #fafafa;
+    }
+
+    .rooms-card-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #111827;
+        margin: 0;
+        display: flex;
+        align-items: center;
+    }
+
+    .rooms-card-body {
+        padding: 1.5rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-control-modern {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        font-size: 0.9375rem;
+        background: #ffffff;
+        transition: all 0.2s ease;
+        outline: none;
+    }
+
+    .form-control-modern:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .form-control-modern:disabled {
+        background: #f9fafb;
+        color: #9ca3af;
+        cursor: not-allowed;
+    }
+
+    .search-wrapper {
+        position: relative;
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #9ca3af;
+        z-index: 1;
+    }
+
+    .search-input {
+        padding-left: 2.75rem;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-modern {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 10px;
+        font-size: 0.9375rem;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        outline: none;
+    }
+
+    .btn-primary-modern {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: #ffffff;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-primary-modern:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary-modern {
+        background: #f3f4f6;
+        color: #374151;
+        border: 2px solid #e5e7eb;
+    }
+
+    .btn-secondary-modern:hover {
+        background: #e9ecef;
+        border-color: #d1d5db;
+    }
+
+    .btn-outline-modern {
+        background: #ffffff;
+        color: #667eea;
+        border: 2px solid #667eea;
+    }
+
+    .btn-outline-modern:hover {
+        background: #667eea;
+        color: #ffffff;
+    }
+
+    .validation-summary {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        color: #dc2626;
+        padding: 1rem;
+        border-radius: 10px;
+        margin-bottom: 1.5rem;
+        font-size: 0.875rem;
+        list-style: none;
+    }
+
+    .badge-modern {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.75rem;
+        background: #e5e7eb;
+        color: #374151;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-left: 0.5rem;
+    }
+
+    .table-wrapper {
+        overflow-x: auto;
+    }
+
+    .table-modern {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .table-modern thead {
+        background: #f9fafb;
+    }
+
+    .table-modern th {
+        padding: 1rem;
+        text-align: left;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #374151;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border-bottom: 2px solid #e5e7eb;
+    }
+
+    .table-modern td {
+        padding: 1rem;
+        border-bottom: 1px solid #f3f4f6;
+        font-size: 0.9375rem;
+        color: #111827;
+    }
+
+    .table-modern tbody tr {
+        transition: background-color 0.2s ease;
+    }
+
+    .table-modern tbody tr:hover {
+        background: #f9fafb;
+    }
+
+    .badge-type {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        background: #e0e7ff;
+        color: #4338ca;
+        border-radius: 12px;
+        font-size: 0.8125rem;
+        font-weight: 500;
+    }
+
+    .capacity-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.75rem;
+        background: #dbeafe;
+        color: #1e40af;
+        border-radius: 12px;
+        font-size: 0.8125rem;
+        font-weight: 500;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-size: 0.8125rem;
+        font-weight: 500;
+    }
+
+    .status-available {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .status-unavailable {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .status-badge i {
+        font-size: 0.5rem;
+    }
+
+    .description-text {
+        max-width: 200px;
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: center;
+    }
+
+    .btn-action {
+        width: 36px;
+        height: 36px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        font-size: 1rem;
+    }
+
+    .btn-edit {
+        background: #e0e7ff;
+        color: #4338ca;
+    }
+
+    .btn-edit:hover {
+        background: #c7d2fe;
+        transform: translateY(-2px);
+    }
+
+    .btn-delete {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+    .btn-delete:hover {
+        background: #fecaca;
+        transform: translateY(-2px);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: #9ca3af;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        display: block;
+        opacity: 0.5;
+    }
+
+    .empty-state h4 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-state p {
+        margin: 0;
+        font-size: 0.9375rem;
+    }
+
+    @@media (max-width: 1200px) {
+        .table-modern {
+            font-size: 0.875rem;
+        }
+
+        .table-modern th,
+        .table-modern td {
+            padding: 0.75rem;
+        }
+    }
+
+    @@media (max-width: 992px) {
+        .rooms-container {
+            padding: 1.5rem 0;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        .table-modern {
+            min-width: 1000px;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .rooms-title {
+            font-size: 1.75rem;
+        }
+
+        .rooms-card-body {
+            padding: 1rem;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .btn-modern {
+            width: 100%;
+        }
+    }
+
+    @@media (max-width: 480px) {
+        .rooms-container {
+            padding: 1rem 0;
+        }
+
+        .rooms-title {
+            font-size: 1.5rem;
+        }
+
+        .rooms-card-header,
+        .rooms-card-body {
+            padding: 1rem;
+        }
+    }
+</style>
