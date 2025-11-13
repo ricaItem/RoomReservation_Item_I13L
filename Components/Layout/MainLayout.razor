@@ -1,0 +1,43 @@
+﻿@inherits LayoutComponentBase
+
+<div class="page">
+    @if (!hideNav)
+    {
+        <div class="sidebar">
+            <NavMenu />
+        </div>
+    }
+
+    <main>
+        <div class="top-row px-4">
+            @if (!hideNav)
+            {
+                <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+            }
+        </div>
+
+        <article class="content px-4">
+            @Body
+        </article>
+    </main>
+</div>
+
+@code {
+    private bool hideNav;
+
+    [Inject] NavigationManager NavigationManager { get; set; } = default!;
+
+    protected override void OnInitialized()
+    {
+        var uri = NavigationManager.Uri.ToLower();
+
+        hideNav = uri.EndsWith("/") || uri.Contains("/login");
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        var uri = NavigationManager.Uri.ToLower();
+        hideNav = uri.EndsWith("/") || uri.Contains("/login");
+        StateHasChanged();
+    }
+}

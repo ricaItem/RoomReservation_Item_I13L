@@ -1,0 +1,57 @@
+@page "/login"
+
+<div class="d-flex justify-content-center align-items-center vh-100 login-container">
+    <div class="card shadow login-card">
+        <div class="card-body">
+            <h3 class="text-center mb-4">Login</h3>
+
+            <EditForm Model="@loginModel" OnValidSubmit="HandleLogin">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="mb-3">
+                    <label>Email</label>
+                    <InputText class="form-control" @bind-Value="loginModel.Email" />
+                </div>
+
+                <div class="mb-3">
+                    <label>Password</label>
+                    <InputText type="password" class="form-control" @bind-Value="loginModel.Password" />
+                </div>
+
+                <button class="btn btn-primary w-100" type="submit">Login</button>
+            </EditForm>
+
+            @if (errorMessage != null)
+            {
+                <div class="alert alert-danger mt-3">@errorMessage</div>
+            }
+        </div>
+    </div>
+</div>
+
+
+@code {
+    private LoginModel loginModel = new();
+    private string? errorMessage;
+
+    [Inject] NavigationManager NavigationManager { get; set; } = default!;
+
+    private void HandleLogin()
+    {
+        if (loginModel.Email == "admin@example.com" && loginModel.Password == "1234")
+        {
+            NavigationManager.NavigateTo("/dashboard");
+        }
+        else
+        {
+            errorMessage = "Invalid email or password.";
+        }
+    }
+
+    public class LoginModel
+    {
+        public string Email { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+    }
+}

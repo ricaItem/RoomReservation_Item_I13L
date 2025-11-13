@@ -1,0 +1,116 @@
+@page "/reservations"
+
+<h3>Reservation Management</h3>
+
+<div class="card p-4 mt-3 shadow-sm">
+    <h5>Add New Reservation</h5>
+    <div class="row g-3 mt-2">
+        <div class="col-md-4">
+            <input type="text" class="form-control" placeholder="Guest Name" @bind="guestName" />
+        </div>
+        <div class="col-md-3">
+            <input type="text" class="form-control" placeholder="Room Name" @bind="roomName" />
+        </div>
+        <div class="col-md-2">
+            <input type="date" class="form-control" @bind="checkInDate" />
+        </div>
+        <div class="col-md-2">
+            <input type="date" class="form-control" @bind="checkOutDate" />
+        </div>
+        <div class="col-md-1 d-flex align-items-center">
+            <button class="btn btn-success w-100" @onclick="AddReservation">Add</button>
+        </div>
+    </div>
+</div>
+
+<div class="mt-4">
+    <h5>Current Reservations</h5>
+
+    @if (reservations.Count == 0)
+    {
+        <p class="text-secondary">No reservations yet.</p>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-striped mt-2">
+            <thead class="table-light">
+                <tr>
+                    <th>Guest Name</th>
+                    <th>Room</th>
+                    <th>Check-In</th>
+                    <th>Check-Out</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var res in reservations)
+                {
+                    <tr>
+                        <td>@res.GuestName</td>
+                        <td>@res.RoomName</td>
+                        <td>@res.CheckInDate.ToShortDateString()</td>
+                        <td>@res.CheckOutDate.ToShortDateString()</td>
+                        <td>
+                            <span class="badge bg-@(res.Status == "Active" ? "success" : "secondary")">@res.Status</span>
+                        </td>
+                        <td>
+                            @if (res.Status == "Active")
+                            {
+                                <button class="btn btn-danger btn-sm" @onclick="() => CancelReservation(res)">Cancel</button>
+                            }
+                            else
+                            {
+                                <button class="btn btn-secondary btn-sm" disabled>Cancelled</button>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@code {
+    private List<Reservation> reservations = new();
+    private string guestName = string.Empty;
+    private string roomName = string.Empty;
+    private DateTime checkInDate = DateTime.Today;
+    private DateTime checkOutDate = DateTime.Today.AddDays(1);
+
+    private void AddReservation()
+    {
+        if (!string.IsNullOrWhiteSpace(guestName) && !string.IsNullOrWhiteSpace(roomName))
+        {
+            reservations.Add(new Reservation
+            {
+                GuestName = guestName,
+                RoomName = roomName,
+                CheckInDate = checkInDate,
+                CheckOutDate = checkOutDate,
+                Status = "Active"
+            });
+
+            guestName = string.Empty;
+            roomName = string.Empty;
+            checkInDate = DateTime.Today;
+            checkOutDate = DateTime.Today.AddDays(1);
+        }
+    }
+
+    private void CancelReservation(Reservation res)
+    {
+        res.Status = "Cancelled";
+    }
+
+    private class Reservation
+    {
+        public string GuestName { get; set; } = string.Empty;
+        public string RoomName { get; set; } = string.Empty;
+        public DateTime CheckInDate { get; set; }
+        public DateTime CheckOutDate { get; set; }
+        public string Status { get; set; } = "Active";
+    }
+}

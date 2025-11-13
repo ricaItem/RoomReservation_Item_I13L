@@ -1,0 +1,124 @@
+@page "/rooms"
+
+<h3 class="mb-4 fw-bold text-primary">Room Management</h3>
+
+<div class="card shadow-sm p-4 mb-4">
+    <EditForm Model="@roomModel" OnValidSubmit="SaveRoom">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label>Room Number</label>
+                <InputText class="form-control" @bind-Value="roomModel.RoomNumber" />
+            </div>
+            <div class="col-md-4">
+                <label>Room Type</label>
+                <InputText class="form-control" @bind-Value="roomModel.RoomType" />
+            </div>
+            <div class="col-md-4">
+                <label>Capacity</label>
+                <InputNumber class="form-control" @bind-Value="roomModel.Capacity" />
+            </div>
+        </div>
+
+        <div class="mt-4 d-flex gap-2 flex-wrap">
+            <button class="btn btn-success" type="submit">Add / Update</button>
+            <button class="btn btn-danger" type="button" @onclick="() => DeleteRoom(roomModel)">Delete</button>
+            <button class="btn btn-secondary" type="button" @onclick="ClearForm">Clear</button>
+        </div>
+    </EditForm>
+</div>
+
+<div class="card shadow-sm p-4">
+    <h5 class="mb-3">Room List</h5>
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+        <thead class="table-primary">
+            <tr>
+                <th>Room Number</th>
+                <th>Type</th>
+                <th>Capacity</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var room in roomList)
+            {
+                <tr>
+                    <td>@room.RoomNumber</td>
+                    <td>@room.RoomType</td>
+                    <td>@room.Capacity</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary" @onclick="() => EditRoom(room)">Edit</button>
+                        <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteRoom(room)">Delete</button>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+    private RoomModel roomModel = new();
+    private List<RoomModel> roomList = new();
+
+    private int nextId = 1;
+
+    private void SaveRoom()
+    {
+        if (roomModel.Id == 0)
+        {
+            roomModel.Id = nextId++;
+            roomList.Add(new RoomModel
+            {
+                Id = roomModel.Id,
+                RoomNumber = roomModel.RoomNumber,
+                RoomType = roomModel.RoomType,
+                Capacity = roomModel.Capacity
+            });
+        }
+        else
+        {
+            var existing = roomList.FirstOrDefault(r => r.Id == roomModel.Id);
+            if (existing != null)
+            {
+                existing.RoomNumber = roomModel.RoomNumber;
+                existing.RoomType = roomModel.RoomType;
+                existing.Capacity = roomModel.Capacity;
+            }
+        }
+
+        ClearForm();
+    }
+
+    private void EditRoom(RoomModel room)
+    {
+        roomModel = new RoomModel
+        {
+            Id = room.Id,
+            RoomNumber = room.RoomNumber,
+            RoomType = room.RoomType,
+            Capacity = room.Capacity
+        };
+    }
+
+    private void DeleteRoom(RoomModel room)
+    {
+        roomList.Remove(room);
+    }
+
+    private void ClearForm()
+    {
+        roomModel = new RoomModel();
+    }
+
+    public class RoomModel
+    {
+        public int Id { get; set; }
+        public string RoomNumber { get; set; } = string.Empty;
+        public string RoomType { get; set; } = string.Empty;
+        public int Capacity { get; set; }
+    }
+}
