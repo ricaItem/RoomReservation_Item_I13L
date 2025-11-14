@@ -13,9 +13,15 @@
     </div>
 
     <div class="reservations-card mb-4">
+        <div class="reservations-card-header">
+            <h3 class="reservations-card-title">
+                <i class="bi bi-funnel me-2"></i>
+                Filters & Search
+            </h3>
+        </div>
         <div class="reservations-card-body">
-            <div class="row g-3 align-items-end">
-                <div class="col-md-4">
+            <div class="row g-3">
+                <div class="col-lg-3 col-md-6">
                     <div class="form-group">
                         <label class="form-label">
                             <i class="bi bi-search me-2"></i>
@@ -24,10 +30,10 @@
                         <div class="search-wrapper">
                             <i class="bi bi-search search-icon"></i>
                             <InputText class="form-control-modern search-input" @bind-Value="searchQuery" @oninput="FilterReservations" placeholder="Search by customer name, room..." />
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-2">
+        </div>
+        </div>
+        </div>
+                <div class="col-lg-2 col-md-6">
                     <div class="form-group">
                         <label class="form-label">
                             <i class="bi bi-funnel me-2"></i>
@@ -42,7 +48,7 @@
                         </InputSelect>
                     </div>
                 </div>
-                <div class="col-md-2">
+                <div class="col-lg-2 col-md-6">
                     <div class="form-group">
                         <label class="form-label">
                             <i class="bi bi-calendar me-2"></i>
@@ -51,7 +57,7 @@
                         <InputDate class="form-control-modern" @bind-Value="startDateFilter" @onchange="FilterReservations" />
                     </div>
                 </div>
-                <div class="col-md-2">
+                <div class="col-lg-2 col-md-6">
                     <div class="form-group">
                         <label class="form-label">
                             <i class="bi bi-calendar me-2"></i>
@@ -60,7 +66,7 @@
                         <InputDate class="form-control-modern" @bind-Value="endDateFilter" @onchange="FilterReservations" />
                     </div>
                 </div>
-                <div class="col-md-2">
+                <div class="col-lg-2 col-md-6">
                     <div class="form-group">
                         <label class="form-label">
                             <i class="bi bi-door-closed me-2"></i>
@@ -78,24 +84,18 @@
                         </InputSelect>
                     </div>
                 </div>
-                <div class="col-md-2">
+                <div class="col-lg-1 col-md-6">
                     <div class="form-group">
-                        <label class="form-label">
-                            <i class="bi bi-person me-2"></i>
-                            Customer
-                        </label>
-                        <InputText class="form-control-modern" @bind-Value="customerFilter" @oninput="FilterReservations" placeholder="Customer name" />
+                        <label class="form-label">&nbsp;</label>
+                        <button class="btn-modern btn-clear w-100" type="button" @onclick="ClearFilters" title="Clear Filters">
+                            <i class="bi bi-x-circle me-1"></i>
+                            Clear
+                        </button>
                     </div>
                 </div>
-                <div class="col-md-2">
-                    <button class="btn-modern btn-outline-modern w-100" type="button" @onclick="ClearFilters">
-                        <i class="bi bi-arrow-counterclockwise me-2"></i>
-                        Reset
-                    </button>
-                </div>
-            </div>
         </div>
     </div>
+</div>
 
     <div class="reservations-card">
         <div class="reservations-card-header">
@@ -115,9 +115,9 @@
                     <h4>No reservations found</h4>
                     <p>@(reservationList.Count == 0 ? "Get started by adding your first reservation." : "Try adjusting your search or filter criteria.")</p>
                 </div>
-            }
-            else
-            {
+    }
+    else
+    {
                 <div class="table-wrapper">
                     <table class="table-modern">
                         <thead>
@@ -179,10 +179,10 @@
                                 </th>
 
                                 <th class="text-center">Actions</th>
-                            </tr>
-                        </thead>
+                </tr>
+            </thead>
 
-                        <tbody>
+            <tbody>
                             @foreach (var reservation in filteredReservationList)
                             {
                                 <tr class="@GetStatusRowClass(reservation.Status)">
@@ -196,43 +196,31 @@
                                             <i class="bi bi-circle-fill me-1"></i>
                                             @reservation.Status
                                         </span>
-                                    </td>
-                                    <td>
+                        </td>
+                        <td>
                                         <span class="payment-badge @GetPaymentBadgeClass(reservation.PaymentStatus)">
                                             @reservation.PaymentStatus
                                         </span>
-                                    </td>
-                                    <td>
+                        </td>
+                        <td>
                                         <div class="action-buttons">
                                             <button class="btn-action btn-view" @onclick="() => OpenViewModal(reservation)" title="View Details">
                                                 <i class="bi bi-eye"></i>
                                             </button>
                                             <button class="btn-action btn-edit" @onclick="() => OpenEditModal(reservation)" title="Edit">
-                                                <i class="bi bi-pencil-square"></i>
+                                                <i class="bi bi-pencil"></i>
                                             </button>
-                                            @if (reservation.Status == "Pending")
-                                            {
-                                                <button class="btn-action btn-approve" @onclick="() => ApproveReservation(reservation)" title="Approve">
-                                                    <i class="bi bi-check-circle"></i>
-                                                </button>
-                                            }
-                                            @if (reservation.Status != "Cancelled" && reservation.Status != "Completed")
-                                            {
-                                                <button class="btn-action btn-cancel" @onclick="() => CancelReservation(reservation)" title="Cancel">
-                                                    <i class="bi bi-x-circle"></i>
-                                                </button>
-                                            }
-                                            <button class="btn-action btn-delete" @onclick="() => DeleteReservation(reservation)" title="Delete">
+                                            <button class="btn-action btn-delete" @onclick="() => ConfirmDeleteReservation(reservation)" title="Delete">
                                                 <i class="bi bi-trash"></i>
                                             </button>
                                         </div>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
                 </div>
-            }
+    }
         </div>
     </div>
 </div>
@@ -355,14 +343,14 @@
                         </div>
                     </div>
 
-                    <div class="form-actions mt-4">
-                        <button class="btn-modern btn-primary-modern" type="submit">
-                            <i class="bi bi-plus-circle me-2"></i>
-                            Add Reservation
-                        </button>
-                        <button class="btn-modern btn-secondary-modern" type="button" @onclick="CloseAddModal">
+                    <div class="modal-footer-actions">
+                        <button class="btn-modern btn-cancel" type="button" @onclick="CloseAddModal">
                             <i class="bi bi-x-circle me-2"></i>
                             Cancel
+                        </button>
+                        <button class="btn-modern btn-confirm" type="button" @onclick="ConfirmAddReservation">
+                            <i class="bi bi-plus-circle me-2"></i>
+                            Add Reservation
                         </button>
                     </div>
                 </EditForm>
@@ -500,13 +488,13 @@
                     </div>
 
                     <div class="form-actions mt-4">
-                        <button class="btn-modern btn-primary-modern" type="submit">
-                            <i class="bi bi-check-circle me-2"></i>
-                            Update Reservation
-                        </button>
-                        <button class="btn-modern btn-secondary-modern" type="button" @onclick="CloseEditModal">
+                        <button class="btn-modern btn-cancel" type="button" @onclick="CloseEditModal">
                             <i class="bi bi-x-circle me-2"></i>
                             Cancel
+                        </button>
+                        <button class="btn-modern btn-confirm" type="button" @onclick="ConfirmUpdateReservation">
+                            <i class="bi bi-check-circle me-2"></i>
+                            Update Reservation
                         </button>
                     </div>
                 </EditForm>
@@ -624,6 +612,36 @@
     </div>
 }
 
+@if (showConfirmDialog)
+{
+    <div class="modal-overlay" @onclick="CancelConfirmDialog">
+        <div class="modal-container confirm-dialog" @onclick:stopPropagation="true">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Confirm Action
+                </h3>
+                <button class="modal-close" @onclick="CancelConfirmDialog">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="confirm-message">@confirmMessage</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-modern btn-cancel" @onclick="CancelConfirmDialog">
+                    <i class="bi bi-x-circle me-2"></i>
+                    Cancel
+                </button>
+                <button class="btn-modern @(IsDestructiveAction() ? "btn-confirm-destructive" : "btn-confirm")" @onclick="ExecuteConfirmedAction">
+                    <i class="bi bi-check-circle me-2"></i>
+                    Confirm
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
     private ReservationModel reservationModel = new();
     private List<ReservationModel> reservationList = new();
@@ -634,7 +652,6 @@
     private DateTime? startDateFilter;
     private DateTime? endDateFilter;
     private string roomTypeFilter = string.Empty;
-    private string customerFilter = string.Empty;
     private bool showAddModal = false;
     private bool showEditModal = false;
     private bool showViewModal = false;
@@ -642,6 +659,10 @@
     private string sortColumn = "Id";
     private string sortDirection = "asc";
     private int nextId = 1;
+    private bool showConfirmDialog = false;
+    private string confirmAction = string.Empty;
+    private string confirmMessage = string.Empty;
+    private ReservationModel? reservationToDelete;
 
     protected override void OnInitialized()
     {
@@ -677,6 +698,7 @@
         showAddModal = false;
         reservationModel = new ReservationModel();
     }
+
 
     private void OpenEditModal(ReservationModel reservation)
     {
@@ -715,6 +737,17 @@
         selectedReservation = null;
     }
 
+    private void ConfirmAddReservation()
+    {
+        if (string.IsNullOrEmpty(reservationModel.RoomName) || string.IsNullOrEmpty(reservationModel.CustomerName))
+        {
+            return;
+        }
+        confirmAction = "add";
+        confirmMessage = $"Are you sure you want to add a new reservation for {reservationModel.CustomerName}?";
+        showConfirmDialog = true;
+    }
+
     private void SaveReservation()
     {
         reservationModel.Id = nextId++;
@@ -745,6 +778,17 @@
 
         CloseAddModal();
         FilterReservations();
+    }
+
+    private void ConfirmUpdateReservation()
+    {
+        if (string.IsNullOrEmpty(reservationModel.RoomName) || string.IsNullOrEmpty(reservationModel.CustomerName))
+        {
+            return;
+        }
+        confirmAction = "update";
+        confirmMessage = $"Are you sure you want to update reservation #{reservationModel.Id} for {reservationModel.CustomerName}?";
+        showConfirmDialog = true;
     }
 
     private void UpdateReservation()
@@ -781,10 +825,54 @@
         FilterReservations();
     }
 
+    private void ConfirmDeleteReservation(ReservationModel reservation)
+    {
+        reservationToDelete = reservation;
+        confirmAction = "delete";
+        confirmMessage = $"Are you sure you want to delete reservation #{reservation.Id} for {reservation.CustomerName}? This action cannot be undone.";
+        showConfirmDialog = true;
+    }
+
     private void DeleteReservation(ReservationModel reservation)
     {
         reservationList.Remove(reservation);
         FilterReservations();
+    }
+
+    private void ExecuteConfirmedAction()
+    {
+        showConfirmDialog = false;
+        switch (confirmAction)
+        {
+            case "add":
+                SaveReservation();
+                break;
+            case "update":
+                UpdateReservation();
+                break;
+            case "delete":
+                if (reservationToDelete != null)
+                {
+                    DeleteReservation(reservationToDelete);
+                    reservationToDelete = null;
+                }
+                break;
+        }
+        confirmAction = string.Empty;
+        confirmMessage = string.Empty;
+    }
+
+    private bool IsDestructiveAction()
+    {
+        return confirmAction == "delete" || confirmAction == "archive";
+    }
+
+    private void CancelConfirmDialog()
+    {
+        showConfirmDialog = false;
+        confirmAction = string.Empty;
+        confirmMessage = string.Empty;
+        reservationToDelete = null;
     }
 
     private void SortBy(string column)
@@ -837,12 +925,12 @@
             (string.IsNullOrEmpty(searchQuery) ||
              res.CustomerName.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
              res.RoomName.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
-             res.Status.Contains(searchQuery, StringComparison.OrdinalIgnoreCase)) &&
+             res.Status.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+             res.PaymentStatus.Contains(searchQuery, StringComparison.OrdinalIgnoreCase)) &&
             (string.IsNullOrEmpty(statusFilter) || res.Status == statusFilter) &&
-            (!startDateFilter.HasValue || res.CheckInDate >= startDateFilter.Value) &&
-            (!endDateFilter.HasValue || res.CheckOutDate <= endDateFilter.Value) &&
-            (string.IsNullOrEmpty(roomTypeFilter) || res.RoomName.Contains(roomTypeFilter, StringComparison.OrdinalIgnoreCase)) &&
-            (string.IsNullOrEmpty(customerFilter) || res.CustomerName.Contains(customerFilter, StringComparison.OrdinalIgnoreCase))
+            (!startDateFilter.HasValue || res.CheckInDate >= startDateFilter.Value.Date) &&
+            (!endDateFilter.HasValue || res.CheckOutDate <= endDateFilter.Value.Date) &&
+            (string.IsNullOrEmpty(roomTypeFilter) || res.RoomName.Contains(roomTypeFilter, StringComparison.OrdinalIgnoreCase))
         ).ToList();
 
         ApplySorting();
@@ -855,7 +943,6 @@
         startDateFilter = null;
         endDateFilter = null;
         roomTypeFilter = string.Empty;
-        customerFilter = string.Empty;
         FilterReservations();
     }
 
@@ -939,13 +1026,18 @@
     .reservations-card {
         background: #ffffff;
         border-radius: 16px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         border: 1px solid #e5e7eb;
         overflow: hidden;
+        transition: box-shadow 0.2s ease;
+    }
+
+    .reservations-card:hover {
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
     }
 
     .reservations-card-header {
-        padding: 1rem 1.5rem;
+        padding: 1.25rem 1.5rem;
         border-bottom: 1px solid #f3f4f6;
         background: #fafafa;
     }
@@ -960,11 +1052,11 @@
     }
 
     .reservations-card-body {
-        padding: 1.25rem;
+        padding: 1.5rem;
     }
 
     .form-group {
-        margin-bottom: 1.5rem;
+        margin-bottom: 0;
     }
 
     .form-label {
@@ -975,20 +1067,31 @@
         margin-bottom: 0.5rem;
     }
 
+    .form-label i {
+        color: #6b7280;
+    }
+
     .form-control-modern {
         width: 100%;
-        padding: 0.75rem 1rem;
-        border: 2px solid #e5e7eb;
-        border-radius: 10px;
+        padding: 0.875rem 1rem;
+        border: 1.5px solid #e5e7eb;
+        border-radius: 12px;
         font-size: 0.9375rem;
         background: #ffffff;
-        transition: all 0.2s ease;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         outline: none;
+        color: #111827;
+        line-height: 1.5;
     }
 
     .form-control-modern:focus {
-        border-color: #111827;
-        box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.1);
+        border-color: #2563eb;
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+        background: #ffffff;
+    }
+
+    .form-control-modern:hover:not(:disabled) {
+        border-color: #d1d5db;
     }
 
     .form-control-modern:disabled {
@@ -1006,8 +1109,9 @@
         left: 1rem;
         top: 50%;
         transform: translateY(-50%);
-        color: #9ca3af;
+        color: #6b7280;
         z-index: 1;
+        font-size: 1rem;
     }
 
     .search-input {
@@ -1016,22 +1120,26 @@
 
     .form-actions {
         display: flex;
-        gap: 1rem;
+        gap: 0.75rem;
         flex-wrap: wrap;
+        justify-content: flex-end;
+        align-items: center;
     }
 
     .btn-modern {
-        padding: 0.75rem 1.5rem;
+        padding: 0.875rem 1.75rem;
         border: none;
-        border-radius: 10px;
+        border-radius: 12px;
         font-size: 0.9375rem;
         font-weight: 600;
         cursor: pointer;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        transition: all 0.2s ease;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         outline: none;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+        line-height: 1.5;
     }
 
     .btn-primary-modern {
@@ -1042,7 +1150,12 @@
     .btn-primary-modern:hover {
         background: #1f2937;
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(17, 24, 39, 0.2);
+        box-shadow: 0 4px 12px rgba(17, 24, 39, 0.25);
+    }
+
+    .btn-primary-modern:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 4px rgba(17, 24, 39, 0.2);
     }
 
     .btn-secondary-modern {
@@ -1065,6 +1178,32 @@
     .btn-outline-modern:hover {
         background: #111827;
         color: #ffffff;
+    }
+
+    .btn-clear {
+        background: #f3f4f6;
+        color: #6b7280;
+        border: 1.5px solid #e5e7eb;
+        padding: 0.875rem 1rem;
+        height: 100%;
+        min-height: 42px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9375rem;
+        font-weight: 600;
+    }
+
+    .btn-clear:hover {
+        background: #fee2e2;
+        border-color: #fecaca;
+        color: #dc2626;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(220, 38, 38, 0.1);
+    }
+
+    .btn-clear i {
+        font-size: 1rem;
     }
 
     .validation-summary {
@@ -1096,47 +1235,57 @@
 
     .table-modern {
         width: 100%;
-        border-collapse: collapse;
+        border-collapse: separate;
+        border-spacing: 0;
     }
 
     .table-modern thead {
-        background: #f9fafb;
+        background: #fafafa;
     }
 
     .table-modern th {
-        padding: 1rem;
+        padding: 1.25rem 1rem;
         text-align: left;
-        font-size: 0.875rem;
+        font-size: 0.8125rem;
         font-weight: 600;
-        color: #374151;
+        color: #6b7280;
         text-transform: uppercase;
         letter-spacing: 0.05em;
         border-bottom: 2px solid #e5e7eb;
+        white-space: nowrap;
     }
 
     .table-modern th.sortable {
         cursor: pointer;
         user-select: none;
-        transition: background-color 0.2s ease;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .table-modern th.sortable:hover {
         background: #f3f4f6;
+        color: #374151;
     }
 
     .table-modern td {
-        padding: 1rem;
+        padding: 1.25rem 1rem;
         border-bottom: 1px solid #f3f4f6;
         font-size: 0.9375rem;
         color: #111827;
+        vertical-align: middle;
     }
 
     .table-modern tbody tr {
-        transition: background-color 0.2s ease;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        background: #ffffff;
     }
 
     .table-modern tbody tr:hover {
         background: #f9fafb;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+
+    .table-modern tbody tr:last-child td {
+        border-bottom: none;
     }
 
     .row-pending {
@@ -1232,59 +1381,50 @@
         display: flex;
         gap: 0.5rem;
         justify-content: center;
-        flex-wrap: wrap;
+        align-items: center;
+        flex-wrap: nowrap;
     }
 
     .btn-action {
-        width: 36px;
-        height: 36px;
+        width: 40px;
+        height: 40px;
         border: none;
-        border-radius: 8px;
+        border-radius: 12px;
         cursor: pointer;
-        display: flex;
+        display: inline-flex;
         align-items: center;
         justify-content: center;
-        transition: all 0.2s ease;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         font-size: 1rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+        position: relative;
+    }
+
+    .btn-action:active {
+        transform: scale(0.95);
     }
 
     .btn-view {
-        background: #dbeafe;
-        color: #1e40af;
+        background: #e0f2fe;
+        color: #0369a1;
     }
 
     .btn-view:hover {
-        background: #bfdbfe;
+        background: #bae6fd;
+        color: #075985;
+        box-shadow: 0 4px 8px rgba(3, 105, 161, 0.2);
         transform: translateY(-2px);
     }
 
     .btn-edit {
-        background: #e0e7ff;
-        color: #4338ca;
+        background: #fef3c7;
+        color: #d97706;
     }
 
     .btn-edit:hover {
-        background: #c7d2fe;
-        transform: translateY(-2px);
-    }
-
-    .btn-approve {
-        background: #d1fae5;
-        color: #065f46;
-    }
-
-    .btn-approve:hover {
-        background: #a7f3d0;
-        transform: translateY(-2px);
-    }
-
-    .btn-cancel {
-        background: #fee2e2;
-        color: #991b1b;
-    }
-
-    .btn-cancel:hover {
-        background: #fecaca;
+        background: #fde68a;
+        color: #b45309;
+        box-shadow: 0 4px 8px rgba(217, 119, 6, 0.2);
         transform: translateY(-2px);
     }
 
@@ -1295,7 +1435,14 @@
 
     .btn-delete:hover {
         background: #fecaca;
+        color: #b91c1c;
+        box-shadow: 0 4px 8px rgba(220, 38, 38, 0.2);
         transform: translateY(-2px);
+    }
+
+    .btn-action i {
+        font-size: 1.125rem;
+        line-height: 1;
     }
 
     .empty-state {
@@ -1336,6 +1483,7 @@
         z-index: 1000;
         padding: 1rem;
         animation: fadeIn 0.2s ease;
+        backdrop-filter: blur(2px);
     }
 
     @@keyframes fadeIn {
@@ -1349,17 +1497,23 @@
 
     .modal-container {
         background: #ffffff;
-        border-radius: 16px;
+        border-radius: 20px;
         width: 100%;
-        max-width: 600px;
+        max-width: 700px;
         max-height: 90vh;
-        overflow-y: auto;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        animation: slideUp 0.3s ease;
+        overflow: hidden;
+        box-shadow: 0 24px 48px rgba(0, 0, 0, 0.15);
+        animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        flex-direction: column;
     }
 
     .modal-container.modal-view {
         max-width: 700px;
+    }
+
+    .modal-container.confirm-dialog {
+        max-width: 500px;
     }
 
     @@keyframes slideUp {
@@ -1374,13 +1528,14 @@
     }
 
     .modal-header {
-        padding: 1.5rem;
+        padding: 1.75rem 2rem;
         border-bottom: 1px solid #e5e7eb;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        background: #fafafa;
-        border-radius: 16px 16px 0 0;
+        background: #ffffff;
+        border-radius: 20px 20px 0 0;
+        flex-shrink: 0;
     }
 
     .modal-title {
@@ -1390,38 +1545,134 @@
         margin: 0;
         display: flex;
         align-items: center;
+        letter-spacing: -0.02em;
+    }
+
+    .modal-title i {
+        color: #2563eb;
+    }
+
+    .confirm-dialog .modal-title i {
+        color: #f59e0b;
     }
 
     .modal-close {
-        width: 36px;
-        height: 36px;
+        width: 40px;
+        height: 40px;
         border: none;
-        background: transparent;
-        border-radius: 8px;
+        background: #f3f4f6;
+        border-radius: 12px;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
         color: #6b7280;
-        transition: all 0.2s ease;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .modal-close:hover {
-        background: #f3f4f6;
+        background: #e5e7eb;
         color: #111827;
+        transform: scale(1.05);
+    }
+
+    .modal-close:active {
+        transform: scale(0.95);
     }
 
     .modal-body {
-        padding: 1.5rem;
+        padding: 2rem;
+        overflow-y: auto;
+        flex: 1;
+    }
+
+    .modal-body .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .modal-body .form-label {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.625rem;
+        display: flex;
+        align-items: center;
+    }
+
+    .modal-body .form-label i {
+        color: #6b7280;
+        margin-right: 0.5rem;
+    }
+
+    .modal-body .text-danger {
+        color: #dc2626;
+        margin-left: 0.25rem;
     }
 
     .modal-footer {
-        padding: 1rem 1.5rem;
+        padding: 1.25rem 2rem;
         border-top: 1px solid #e5e7eb;
         display: flex;
         justify-content: flex-end;
+        gap: 0.75rem;
         background: #fafafa;
-        border-radius: 0 0 16px 16px;
+        border-radius: 0 0 20px 20px;
+        flex-shrink: 0;
+    }
+
+    .modal-footer-actions {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 0.75rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #f3f4f6;
+        margin-top: 1rem;
+    }
+
+    .confirm-message {
+        font-size: 1rem;
+        color: #374151;
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    .btn-cancel {
+        background: #f3f4f6;
+        color: #374151;
+        border: 1.5px solid #d1d5db;
+    }
+
+    .btn-cancel:hover {
+        background: #e5e7eb;
+        border-color: #9ca3af;
+        color: #111827;
+    }
+
+    .btn-confirm {
+        background: #2563eb;
+        color: #ffffff;
+        border: 1.5px solid #2563eb;
+    }
+
+    .btn-confirm:hover {
+        background: #1d4ed8;
+        border-color: #1d4ed8;
+        color: #ffffff;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    }
+
+    .btn-confirm-destructive {
+        background: #dc2626;
+        color: #ffffff;
+        border: 1.5px solid #dc2626;
+    }
+
+    .btn-confirm-destructive:hover {
+        background: #b91c1c;
+        border-color: #b91c1c;
+        color: #ffffff;
+        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
     }
 
     .detail-view {
@@ -1509,12 +1760,30 @@
             padding: 1rem;
         }
 
-        .form-actions {
-            flex-direction: column;
+        .form-group {
+            margin-bottom: 1rem;
         }
 
-        .btn-modern {
+        .form-actions {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .form-actions .btn-modern {
             width: 100%;
+        }
+
+        .modal-footer-actions {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .modal-footer-actions .btn-modern {
+            width: 100%;
+        }
+
+        .btn-clear {
+            min-height: 48px;
         }
 
         .modal-container {
@@ -1541,9 +1810,24 @@
             padding: 1rem;
         }
 
-        .modal-header,
+        .modal-header {
+            padding: 1.25rem 1.5rem;
+        }
+
         .modal-body {
-            padding: 1rem;
+            padding: 1.5rem;
+        }
+
+        .modal-footer {
+            padding: 1rem 1.5rem;
+        }
+
+        .modal-footer-actions {
+            flex-direction: column;
+        }
+
+        .modal-footer-actions .btn-modern {
+            width: 100%;
         }
     }
 </style>

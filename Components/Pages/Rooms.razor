@@ -26,8 +26,8 @@
                             <InputText class="form-control-modern search-input" @bind-Value="searchQuery" @oninput="FilterRooms" placeholder="Search by room name or type..." />
                         </div>
                     </div>
-                </div>
-                <div class="col-md-4">
+            </div>
+            <div class="col-md-4">
                     <div class="form-group">
                         <label class="form-label">
                             <i class="bi bi-funnel me-2"></i>
@@ -41,14 +41,17 @@
                     </div>
                 </div>
                 <div class="col-md-2">
-                    <button class="btn-modern btn-outline-modern w-100" type="button" @onclick="ClearFilters">
-                        <i class="bi bi-arrow-counterclockwise me-2"></i>
-                        Reset
-                    </button>
-                </div>
+                    <div class="form-group">
+                        <label class="form-label">&nbsp;</label>
+                        <button class="btn-modern btn-clear w-100" type="button" @onclick="ClearFilters" title="Clear Filters">
+                            <i class="bi bi-x-circle me-2"></i>
+                            Clear
+                        </button>
+                    </div>
+            </div>
+            </div>
             </div>
         </div>
-    </div>
 
     <div class="rooms-card">
         <div class="rooms-card-header">
@@ -67,7 +70,7 @@
                     <i class="bi bi-inbox"></i>
                     <h4>No rooms found</h4>
                     <p>@(roomList.Count == 0 ? "Get started by adding your first room." : "Try adjusting your search or filter criteria.")</p>
-                </div>
+</div>
             }
             else
             {
@@ -77,19 +80,19 @@
                             <tr>
                                 <th>Room ID</th>
                                 <th>Name</th>
-                                <th>Type</th>
-                                <th>Capacity</th>
+                <th>Type</th>
+                <th>Capacity</th>
                                 <th>Status</th>
                                 <th>Description</th>
                                 <th>Created At</th>
                                 <th>Updated At</th>
                                 <th class="text-center">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
+            </tr>
+        </thead>
+        <tbody>
                             @foreach (var room in filteredRoomList)
-                            {
-                                <tr>
+            {
+                <tr>
                                     <td><strong>#@room.Id</strong></td>
                                     <td>@room.RoomName</td>
                                     <td>
@@ -116,19 +119,22 @@
                                     <td>@room.UpdatedAt.ToString("MM/dd/yyyy")</td>
                                     <td>
                                         <div class="action-buttons">
-                                            <button class="btn-action btn-edit" @onclick="() => OpenEditModal(room)" title="Edit">
-                                                <i class="bi bi-pencil-square"></i>
+                                            <button class="btn-action btn-view" @onclick="() => ViewRoomDetails(room)" title="View Details">
+                                                <i class="bi bi-eye"></i>
                                             </button>
-                                            <button class="btn-action btn-delete" @onclick="() => ArchiveRoom(room)" title="Archive">
-                                                <i class="bi bi-archive"></i>
+                                            <button class="btn-action btn-edit" @onclick="() => OpenEditModal(room)" title="Edit">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button class="btn-action btn-delete" @onclick="() => ConfirmArchiveRoom(room)" title="Delete">
+                                                <i class="bi bi-trash"></i>
                                             </button>
                                         </div>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
             }
         </div>
     </div>
@@ -218,13 +224,13 @@
                     </div>
 
                     <div class="form-actions mt-4">
-                        <button class="btn-modern btn-primary-modern" type="submit">
-                            <i class="bi bi-plus-circle me-2"></i>
-                            Add Room
-                        </button>
-                        <button class="btn-modern btn-secondary-modern" type="button" @onclick="CloseAddModal">
+                        <button class="btn-modern btn-cancel" type="button" @onclick="CloseAddModal">
                             <i class="bi bi-x-circle me-2"></i>
                             Cancel
+                        </button>
+                        <button class="btn-modern btn-confirm" type="button" @onclick="ConfirmAddRoom">
+                            <i class="bi bi-plus-circle me-2"></i>
+                            Add Room
                         </button>
                     </div>
                 </EditForm>
@@ -327,16 +333,46 @@
                     </div>
 
                     <div class="form-actions mt-4">
-                        <button class="btn-modern btn-primary-modern" type="submit">
-                            <i class="bi bi-check-circle me-2"></i>
-                            Update Room
-                        </button>
-                        <button class="btn-modern btn-secondary-modern" type="button" @onclick="CloseEditModal">
+                        <button class="btn-modern btn-cancel" type="button" @onclick="CloseEditModal">
                             <i class="bi bi-x-circle me-2"></i>
                             Cancel
                         </button>
+                        <button class="btn-modern btn-confirm" type="button" @onclick="ConfirmUpdateRoom">
+                            <i class="bi bi-check-circle me-2"></i>
+                            Update Room
+                        </button>
                     </div>
                 </EditForm>
+            </div>
+        </div>
+    </div>
+}
+
+@if (showConfirmDialog)
+{
+    <div class="modal-overlay" @onclick="CancelConfirmDialog">
+        <div class="modal-container confirm-dialog" @onclick:stopPropagation="true">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Confirm Action
+                </h3>
+                <button class="modal-close" @onclick="CancelConfirmDialog">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="confirm-message">@confirmMessage</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-modern btn-cancel" @onclick="CancelConfirmDialog">
+                    <i class="bi bi-x-circle me-2"></i>
+                    Cancel
+                </button>
+                <button class="btn-modern @(IsDestructiveAction() ? "btn-confirm-destructive" : "btn-confirm")" @onclick="ExecuteConfirmedAction">
+                    <i class="bi bi-check-circle me-2"></i>
+                    Confirm
+                </button>
             </div>
         </div>
     </div>
@@ -352,6 +388,10 @@
     private bool showAddModal = false;
     private bool showEditModal = false;
     private int nextId = 1;
+    private bool showConfirmDialog = false;
+    private string confirmAction = string.Empty;
+    private string confirmMessage = string.Empty;
+    private RoomModel? roomToArchive;
 
     protected override void OnInitialized()
     {
@@ -392,16 +432,27 @@
         roomModel = new RoomModel();
     }
 
-    private void SaveRoom()
+    private void ConfirmAddRoom()
     {
-        roomModel.Id = nextId++;
+        if (string.IsNullOrEmpty(roomModel.RoomName) || string.IsNullOrEmpty(roomModel.RoomType))
+        {
+            return;
+        }
+        confirmAction = "add";
+        confirmMessage = $"Are you sure you want to add a new room: {roomModel.RoomName}?";
+        showConfirmDialog = true;
+    }
+
+    private void SaveRoom()
+        {
+            roomModel.Id = nextId++;
         roomModel.CreatedAt = DateTime.Now;
         roomModel.UpdatedAt = DateTime.Now;
-        roomList.Add(new RoomModel
-        {
-            Id = roomModel.Id,
+            roomList.Add(new RoomModel
+            {
+                Id = roomModel.Id,
             RoomName = roomModel.RoomName,
-            RoomType = roomModel.RoomType,
+                RoomType = roomModel.RoomType,
             Capacity = roomModel.Capacity,
             Status = roomModel.Status,
             Description = roomModel.Description,
@@ -413,14 +464,25 @@
         FilterRooms();
     }
 
-    private void UpdateRoom()
+    private void ConfirmUpdateRoom()
     {
-        var existing = roomList.FirstOrDefault(r => r.Id == roomModel.Id);
-        if (existing != null)
+        if (string.IsNullOrEmpty(roomModel.RoomName) || string.IsNullOrEmpty(roomModel.RoomType))
         {
+            return;
+        }
+        confirmAction = "update";
+        confirmMessage = $"Are you sure you want to update room: {roomModel.RoomName}?";
+        showConfirmDialog = true;
+    }
+
+    private void UpdateRoom()
+        {
+            var existing = roomList.FirstOrDefault(r => r.Id == roomModel.Id);
+            if (existing != null)
+            {
             existing.RoomName = roomModel.RoomName;
-            existing.RoomType = roomModel.RoomType;
-            existing.Capacity = roomModel.Capacity;
+                existing.RoomType = roomModel.RoomType;
+                existing.Capacity = roomModel.Capacity;
             existing.Status = roomModel.Status;
             existing.Description = roomModel.Description;
             existing.UpdatedAt = DateTime.Now;
@@ -430,11 +492,60 @@
         FilterRooms();
     }
 
+    private void ViewRoomDetails(RoomModel room)
+    {
+        OpenEditModal(room);
+    }
+
+    private void ConfirmArchiveRoom(RoomModel room)
+    {
+        roomToArchive = room;
+        confirmAction = "archive";
+        confirmMessage = $"Are you sure you want to archive room: {room.RoomName}? This action cannot be undone.";
+        showConfirmDialog = true;
+    }
+
     private void ArchiveRoom(RoomModel room)
     {
         roomList.Remove(room);
         archivedRoomList.Add(room);
         FilterRooms();
+    }
+
+    private void ExecuteConfirmedAction()
+    {
+        showConfirmDialog = false;
+        switch (confirmAction)
+        {
+            case "add":
+                SaveRoom();
+                break;
+            case "update":
+                UpdateRoom();
+                break;
+            case "archive":
+                if (roomToArchive != null)
+                {
+                    ArchiveRoom(roomToArchive);
+                    roomToArchive = null;
+                }
+                break;
+        }
+        confirmAction = string.Empty;
+        confirmMessage = string.Empty;
+    }
+
+    private bool IsDestructiveAction()
+    {
+        return confirmAction == "archive" || confirmAction == "delete";
+    }
+
+    private void CancelConfirmDialog()
+    {
+        showConfirmDialog = false;
+        confirmAction = string.Empty;
+        confirmMessage = string.Empty;
+        roomToArchive = null;
     }
 
     private void FilterRooms()
@@ -495,9 +606,14 @@
     .rooms-card {
         background: #ffffff;
         border-radius: 16px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         border: 1px solid #e5e7eb;
         overflow: hidden;
+        transition: box-shadow 0.2s ease;
+    }
+
+    .rooms-card:hover {
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
     }
 
     .rooms-card-header {
@@ -516,7 +632,7 @@
     }
 
     .rooms-card-body {
-        padding: 1.25rem;
+        padding: 1.5rem;
     }
 
     .form-group {
@@ -533,18 +649,25 @@
 
     .form-control-modern {
         width: 100%;
-        padding: 0.75rem 1rem;
-        border: 2px solid #e5e7eb;
-        border-radius: 10px;
+        padding: 0.875rem 1rem;
+        border: 1.5px solid #e5e7eb;
+        border-radius: 12px;
         font-size: 0.9375rem;
         background: #ffffff;
-        transition: all 0.2s ease;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         outline: none;
+        color: #111827;
+        line-height: 1.5;
     }
 
     .form-control-modern:focus {
-        border-color: #111827;
-        box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.1);
+        border-color: #2563eb;
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+        background: #ffffff;
+    }
+
+    .form-control-modern:hover:not(:disabled) {
+        border-color: #d1d5db;
     }
 
     .form-control-modern:disabled {
@@ -572,22 +695,26 @@
 
     .form-actions {
         display: flex;
-        gap: 1rem;
+        gap: 0.75rem;
         flex-wrap: wrap;
+        justify-content: flex-end;
+        align-items: center;
     }
 
     .btn-modern {
-        padding: 0.75rem 1.5rem;
+        padding: 0.875rem 1.75rem;
         border: none;
-        border-radius: 10px;
+        border-radius: 12px;
         font-size: 0.9375rem;
         font-weight: 600;
         cursor: pointer;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        transition: all 0.2s ease;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         outline: none;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+        line-height: 1.5;
     }
 
     .btn-primary-modern {
@@ -598,7 +725,12 @@
     .btn-primary-modern:hover {
         background: #1f2937;
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(17, 24, 39, 0.2);
+        box-shadow: 0 4px 12px rgba(17, 24, 39, 0.25);
+    }
+
+    .btn-primary-modern:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 4px rgba(17, 24, 39, 0.2);
     }
 
     .btn-secondary-modern {
@@ -621,6 +753,70 @@
     .btn-outline-modern:hover {
         background: #111827;
         color: #ffffff;
+    }
+
+    .btn-clear {
+        background: #f3f4f6;
+        color: #6b7280;
+        border: 1.5px solid #e5e7eb;
+        padding: 0.875rem 1rem;
+        height: 100%;
+        min-height: 42px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9375rem;
+        font-weight: 600;
+    }
+
+    .btn-clear:hover {
+        background: #fee2e2;
+        border-color: #fecaca;
+        color: #dc2626;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(220, 38, 38, 0.1);
+    }
+
+    .btn-clear i {
+        font-size: 1rem;
+    }
+
+    .btn-cancel {
+        background: #f3f4f6;
+        color: #374151;
+        border: 1.5px solid #d1d5db;
+    }
+
+    .btn-cancel:hover {
+        background: #e5e7eb;
+        border-color: #9ca3af;
+        color: #111827;
+    }
+
+    .btn-confirm {
+        background: #2563eb;
+        color: #ffffff;
+        border: 1.5px solid #2563eb;
+    }
+
+    .btn-confirm:hover {
+        background: #1d4ed8;
+        border-color: #1d4ed8;
+        color: #ffffff;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    }
+
+    .btn-confirm-destructive {
+        background: #dc2626;
+        color: #ffffff;
+        border: 1.5px solid #dc2626;
+    }
+
+    .btn-confirm-destructive:hover {
+        background: #b91c1c;
+        border-color: #b91c1c;
+        color: #ffffff;
+        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
     }
 
     .validation-summary {
@@ -652,37 +848,46 @@
 
     .table-modern {
         width: 100%;
-        border-collapse: collapse;
+        border-collapse: separate;
+        border-spacing: 0;
     }
 
     .table-modern thead {
-        background: #f9fafb;
+        background: #fafafa;
     }
 
     .table-modern th {
-        padding: 1rem;
+        padding: 1.25rem 1rem;
         text-align: left;
-        font-size: 0.875rem;
+        font-size: 0.8125rem;
         font-weight: 600;
-        color: #374151;
+        color: #6b7280;
         text-transform: uppercase;
         letter-spacing: 0.05em;
         border-bottom: 2px solid #e5e7eb;
+        white-space: nowrap;
     }
 
     .table-modern td {
-        padding: 1rem;
+        padding: 1.25rem 1rem;
         border-bottom: 1px solid #f3f4f6;
         font-size: 0.9375rem;
         color: #111827;
+        vertical-align: middle;
     }
 
     .table-modern tbody tr {
-        transition: background-color 0.2s ease;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        background: #ffffff;
     }
 
     .table-modern tbody tr:hover {
         background: #f9fafb;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+
+    .table-modern tbody tr:last-child td {
+        border-bottom: none;
     }
 
     .badge-type {
@@ -741,28 +946,49 @@
         display: flex;
         gap: 0.5rem;
         justify-content: center;
+        align-items: center;
     }
 
     .btn-action {
-        width: 36px;
-        height: 36px;
+        width: 40px;
+        height: 40px;
         border: none;
-        border-radius: 8px;
+        border-radius: 12px;
         cursor: pointer;
-        display: flex;
+        display: inline-flex;
         align-items: center;
         justify-content: center;
-        transition: all 0.2s ease;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         font-size: 1rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+        position: relative;
+    }
+
+    .btn-action:active {
+        transform: scale(0.95);
+    }
+
+    .btn-view {
+        background: #e0f2fe;
+        color: #0369a1;
+    }
+
+    .btn-view:hover {
+        background: #bae6fd;
+        color: #075985;
+        box-shadow: 0 4px 8px rgba(3, 105, 161, 0.2);
+        transform: translateY(-2px);
     }
 
     .btn-edit {
-        background: #e0e7ff;
-        color: #4338ca;
+        background: #fef3c7;
+        color: #d97706;
     }
 
     .btn-edit:hover {
-        background: #c7d2fe;
+        background: #fde68a;
+        color: #b45309;
+        box-shadow: 0 4px 8px rgba(217, 119, 6, 0.2);
         transform: translateY(-2px);
     }
 
@@ -773,7 +999,14 @@
 
     .btn-delete:hover {
         background: #fecaca;
+        color: #b91c1c;
+        box-shadow: 0 4px 8px rgba(220, 38, 38, 0.2);
         transform: translateY(-2px);
+    }
+
+    .btn-action i {
+        font-size: 1.125rem;
+        line-height: 1;
     }
 
     .empty-state {
@@ -814,6 +1047,7 @@
         z-index: 1000;
         padding: 1rem;
         animation: fadeIn 0.2s ease;
+        backdrop-filter: blur(2px);
     }
 
     @@keyframes fadeIn {
@@ -827,13 +1061,19 @@
 
     .modal-container {
         background: #ffffff;
-        border-radius: 16px;
+        border-radius: 20px;
         width: 100%;
-        max-width: 600px;
+        max-width: 700px;
         max-height: 90vh;
-        overflow-y: auto;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        animation: slideUp 0.3s ease;
+        overflow: hidden;
+        box-shadow: 0 24px 48px rgba(0, 0, 0, 0.15);
+        animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .modal-container.confirm-dialog {
+        max-width: 500px;
     }
 
     @@keyframes slideUp {
@@ -848,13 +1088,14 @@
     }
 
     .modal-header {
-        padding: 1.5rem;
+        padding: 1.75rem 2rem;
         border-bottom: 1px solid #e5e7eb;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        background: #fafafa;
-        border-radius: 16px 16px 0 0;
+        background: #ffffff;
+        border-radius: 20px 20px 0 0;
+        flex-shrink: 0;
     }
 
     .modal-title {
@@ -864,29 +1105,87 @@
         margin: 0;
         display: flex;
         align-items: center;
+        letter-spacing: -0.02em;
+    }
+
+    .modal-title i {
+        color: #2563eb;
+    }
+
+    .confirm-dialog .modal-title i {
+        color: #f59e0b;
     }
 
     .modal-close {
-        width: 36px;
-        height: 36px;
+        width: 40px;
+        height: 40px;
         border: none;
-        background: transparent;
-        border-radius: 8px;
+        background: #f3f4f6;
+        border-radius: 12px;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
         color: #6b7280;
-        transition: all 0.2s ease;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .modal-close:hover {
-        background: #f3f4f6;
+        background: #e5e7eb;
         color: #111827;
+        transform: scale(1.05);
+    }
+
+    .modal-close:active {
+        transform: scale(0.95);
     }
 
     .modal-body {
-        padding: 1.5rem;
+        padding: 2rem;
+        overflow-y: auto;
+        flex: 1;
+    }
+
+    .modal-body .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .modal-body .form-label {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.625rem;
+        display: flex;
+        align-items: center;
+    }
+
+    .modal-body .form-label i {
+        color: #6b7280;
+        margin-right: 0.5rem;
+    }
+
+    .modal-body .text-danger {
+        color: #dc2626;
+        margin-left: 0.25rem;
+    }
+
+    .modal-footer {
+        padding: 1.25rem 2rem;
+        border-top: 1px solid #e5e7eb;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 0.75rem;
+        background: #fafafa;
+        border-radius: 0 0 20px 20px;
+        flex-shrink: 0;
+    }
+
+    .confirm-message {
+        font-size: 1rem;
+        color: #374151;
+        line-height: 1.6;
+        margin: 0;
     }
 
     @@media (max-width: 1200px) {
@@ -934,9 +1233,10 @@
 
         .form-actions {
             flex-direction: column;
+            align-items: stretch;
         }
 
-        .btn-modern {
+        .form-actions .btn-modern {
             width: 100%;
         }
 

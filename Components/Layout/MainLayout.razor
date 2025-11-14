@@ -1,22 +1,52 @@
 ﻿@inherits LayoutComponentBase
 
-<div class="page">
-    @if (!hideNav)
-    {
-        <div class="sidebar">
-            <NavMenu />
-        </div>
-    }
+<div class="page-wrapper @(showLogoutModal ? "blurred" : "")">
+    <div class="page">
+        @if (!hideNav)
+        {
+            <div class="sidebar">
+                <NavMenu OnLogoutRequested="HandleLogoutRequest" />
+            </div>
+        }
 
-    <main>
-        <article class="content">
-            @Body
-        </article>
-    </main>
+        <main>
+            <article class="content">
+                @Body
+            </article>
+        </main>
+    </div>
 </div>
+
+@if (showLogoutModal)
+{
+    <div class="logout-modal-overlay" @onclick="CancelLogout">
+        <div class="logout-modal-container" @onclick:stopPropagation="true">
+            <div class="logout-modal-header">
+                <h3 class="logout-modal-title">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Confirm Logout
+                </h3>
+            </div>
+            <div class="logout-modal-body">
+                <p class="logout-modal-message">Are you sure you want to logout? You will need to login again to access the system.</p>
+            </div>
+            <div class="logout-modal-footer">
+                <button class="btn-modern btn-cancel" @onclick="CancelLogout">
+                    <i class="bi bi-x-circle me-2"></i>
+                    Cancel
+                </button>
+                <button class="btn-modern btn-confirm" @onclick="ConfirmLogout">
+                    <i class="bi bi-box-arrow-right me-2"></i>
+                    Yes, Logout
+                </button>
+            </div>
+        </div>
+    </div>
+}
 
 @code {
     private bool hideNav;
+    private bool showLogoutModal = false;
 
     [Inject] NavigationManager NavigationManager { get; set; } = default!;
 
@@ -31,5 +61,24 @@
         var uri = NavigationManager.Uri.ToLower();
         hideNav = uri.EndsWith("/") || uri.Contains("/login");
         StateHasChanged();
+    }
+
+    private void HandleLogoutRequest()
+    {
+        showLogoutModal = true;
+        StateHasChanged();
+    }
+
+    private void CancelLogout()
+    {
+        showLogoutModal = false;
+        StateHasChanged();
+    }
+
+    private void ConfirmLogout()
+    {
+        showLogoutModal = false;
+        StateHasChanged();
+        NavigationManager.NavigateTo("/login");
     }
 }

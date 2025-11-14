@@ -35,7 +35,7 @@
     </ul>
 
     <div class="sidebar-footer">
-        <button class="logout-btn" @onclick="HandleLogout">
+        <button class="logout-btn" @onclick="RequestLogout">
             <div class="nav-icon">
                 <i class="bi bi-box-arrow-right"></i>
             </div>
@@ -45,11 +45,11 @@
 </nav>
 
 @code {
-    [Inject] NavigationManager NavigationManager { get; set; } = default!;
+    [Parameter] public EventCallback OnLogoutRequested { get; set; }
 
-    private void HandleLogout()
+    private async Task RequestLogout()
     {
-        NavigationManager.NavigateTo("/login");
+        await OnLogoutRequested.InvokeAsync();
     }
 }
 

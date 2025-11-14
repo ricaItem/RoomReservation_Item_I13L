@@ -1,3 +1,15 @@
+.page-wrapper {
+    position: relative;
+    min-height: 100vh;
+    transition: filter 0.3s ease;
+}
+
+.page-wrapper.blurred {
+    filter: blur(4px);
+    pointer-events: none;
+    user-select: none;
+}
+
 .page {
     position: relative;
     display: flex;
@@ -102,5 +114,166 @@ main {
     .top-row, article {
         padding-left: 0.5rem !important;
         padding-right: 1.5rem !important;
+    }
+}
+
+.logout-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    backdrop-filter: blur(2px);
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.logout-modal-container {
+    background: #ffffff;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 500px;
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.15);
+    animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    margin: 1rem;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.logout-modal-header {
+    padding: 1.75rem 2rem;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #ffffff;
+    flex-shrink: 0;
+}
+
+.logout-modal-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    letter-spacing: -0.02em;
+}
+
+.logout-modal-title i {
+    color: #f59e0b;
+}
+
+.logout-modal-body {
+    padding: 2rem;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.logout-modal-message {
+    font-size: 1rem;
+    color: #374151;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.logout-modal-footer {
+    padding: 1.25rem 2rem;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.75rem;
+    background: #fafafa;
+    flex-shrink: 0;
+}
+
+.btn-modern {
+    padding: 0.875rem 1.75rem;
+    border: none;
+    border-radius: 12px;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    outline: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+    line-height: 1.5;
+}
+
+.btn-cancel {
+    background: #f3f4f6;
+    color: #374151;
+    border: 1.5px solid #d1d5db;
+}
+
+.btn-cancel:hover {
+    background: #e5e7eb;
+    border-color: #9ca3af;
+    color: #111827;
+}
+
+.btn-confirm {
+    background: #dc2626;
+    color: #ffffff;
+    border: 1.5px solid #dc2626;
+}
+
+.btn-confirm:hover {
+    background: #b91c1c;
+    border-color: #b91c1c;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+}
+
+@media (max-width: 768px) {
+    .logout-modal-container {
+        max-width: calc(100% - 2rem);
+        margin: 1rem;
+    }
+
+    .logout-modal-header {
+        padding: 1.25rem 1.5rem;
+    }
+
+    .logout-modal-body {
+        padding: 1.5rem;
+    }
+
+    .logout-modal-footer {
+        padding: 1rem 1.5rem;
+        flex-direction: column;
+    }
+
+    .logout-modal-footer .btn-modern {
+        width: 100%;
     }
 }
