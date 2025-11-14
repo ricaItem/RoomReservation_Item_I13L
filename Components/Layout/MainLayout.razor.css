@@ -2,24 +2,21 @@
     position: relative;
     display: flex;
     flex-direction: column;
+    min-height: 100vh;
 }
 
 main {
     flex: 1;
+    background: #fafafa;
 }
 
 .sidebar {
     background: #ffffff;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
 }
 
 .top-row {
-    background-color: #ffffff;
-    border-bottom: 1px solid #e5e7eb;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-    justify-content: flex-end;
-    height: 3.5rem;
-    display: flex;
-    align-items: center;
+    display: none;
 }
 
     .top-row ::deep a, .top-row ::deep .btn-link {
@@ -73,7 +70,7 @@ main {
     }
 
     .top-row, article {
-        padding-left: 1.5rem !important;
+        padding-left: 0.5rem !important;
         padding-right: 1.25rem !important;
     }
 }
@@ -103,7 +100,7 @@ main {
         }
 
     .top-row, article {
-        padding-left: 2rem !important;
+        padding-left: 0.5rem !important;
         padding-right: 1.5rem !important;
     }
 }

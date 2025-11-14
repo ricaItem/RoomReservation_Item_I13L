@@ -6,117 +6,10 @@
             <h1 class="rooms-title">Room Management</h1>
             <p class="rooms-subtitle">Create, update, and manage your room inventory</p>
         </div>
-    </div>
-
-    <div class="rooms-card mb-4">
-        <div class="rooms-card-header">
-            <h3 class="rooms-card-title">
-                <i class="bi bi-plus-circle me-2"></i>
-                @(roomModel.Id == 0 ? "Add New Room" : "Update Room")
-            </h3>
-        </div>
-        <div class="rooms-card-body">
-            <EditForm Model="@roomModel" OnValidSubmit="SaveRoom">
-                <DataAnnotationsValidator />
-                <ValidationSummary class="validation-summary" />
-
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="form-label">
-                                <i class="bi bi-door-closed me-2"></i>
-                                Room Name <span class="text-danger">*</span>
-                            </label>
-                            <InputText class="form-control-modern" @bind-Value="roomModel.RoomName" placeholder="Enter room name" />
-                        </div>
-                    </div>
-
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="form-label">
-                                <i class="bi bi-tags me-2"></i>
-                                Room Type <span class="text-danger">*</span>
-                            </label>
-                            <InputSelect class="form-control-modern" @bind-Value="roomModel.RoomType">
-                                <option value="">Select room type</option>
-                                <option value="Conference Room">Conference Room</option>
-                                <option value="Meeting Room">Meeting Room</option>
-                                <option value="Training Room">Training Room</option>
-                                <option value="Event Hall">Event Hall</option>
-                                <option value="Workspace">Workspace</option>
-                                <option value="Lounge">Lounge</option>
-                                <option value="Office">Office</option>
-                            </InputSelect>
-                        </div>
-                    </div>
-
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            <label class="form-label">
-                                <i class="bi bi-people me-2"></i>
-                                Capacity <span class="text-danger">*</span>
-                            </label>
-                            <InputNumber class="form-control-modern" @bind-Value="roomModel.Capacity" placeholder="Enter capacity" />
-                        </div>
-                    </div>
-
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            <label class="form-label">
-                                <i class="bi bi-circle-fill me-2"></i>
-                                Status <span class="text-danger">*</span>
-                            </label>
-                            <InputSelect class="form-control-modern" @bind-Value="roomModel.Status">
-                                <option value="">Select status</option>
-                                <option value="Available">Available</option>
-                                <option value="Not Available">Not Available</option>
-                            </InputSelect>
-                        </div>
-                    </div>
-
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            <label class="form-label">
-                                <i class="bi bi-hash me-2"></i>
-                                Room ID
-                            </label>
-                            <InputNumber class="form-control-modern" @bind-Value="roomModel.Id" disabled />
-                        </div>
-                    </div>
-
-                    <div class="col-12">
-                        <div class="form-group">
-                            <label class="form-label">
-                                <i class="bi bi-file-text me-2"></i>
-                                Description
-                            </label>
-                            <InputTextArea class="form-control-modern" @bind-Value="roomModel.Description" rows="3" placeholder="Enter room description (optional)" />
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-actions mt-4">
-                    @if (roomModel.Id == 0)
-                    {
-                        <button class="btn-modern btn-primary-modern" type="submit">
-                            <i class="bi bi-plus-circle me-2"></i>
-                            Add Room
-                        </button>
-                    }
-                    else
-                    {
-                        <button class="btn-modern btn-primary-modern" type="submit">
-                            <i class="bi bi-pencil-square me-2"></i>
-                            Update Room
-                        </button>
-                    }
-                    <button class="btn-modern btn-secondary-modern" type="button" @onclick="ClearForm">
-                        <i class="bi bi-x-circle me-2"></i>
-                        Clear
-                    </button>
-                </div>
-            </EditForm>
-        </div>
+        <button class="btn-modern btn-primary-modern" @onclick="OpenAddModal">
+            <i class="bi bi-plus-circle me-2"></i>
+            Add Room
+        </button>
     </div>
 
     <div class="rooms-card mb-4">
@@ -223,11 +116,11 @@
                                     <td>@room.UpdatedAt.ToString("MM/dd/yyyy")</td>
                                     <td>
                                         <div class="action-buttons">
-                                            <button class="btn-action btn-edit" @onclick="() => EditRoom(room)" title="Edit">
+                                            <button class="btn-action btn-edit" @onclick="() => OpenEditModal(room)" title="Edit">
                                                 <i class="bi bi-pencil-square"></i>
                                             </button>
-                                            <button class="btn-action btn-delete" @onclick="() => DeleteRoom(room)" title="Delete">
-                                                <i class="bi bi-trash"></i>
+                                            <button class="btn-action btn-delete" @onclick="() => ArchiveRoom(room)" title="Archive">
+                                                <i class="bi bi-archive"></i>
                                             </button>
                                         </div>
                                     </td>
@@ -241,13 +134,223 @@
     </div>
 </div>
 
+@if (showAddModal)
+{
+    <div class="modal-overlay" @onclick="CloseAddModal">
+        <div class="modal-container" @onclick:stopPropagation="true">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="bi bi-plus-circle me-2"></i>
+                    Add New Room
+                </h3>
+                <button class="modal-close" @onclick="CloseAddModal">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <EditForm Model="@roomModel" OnValidSubmit="SaveRoom">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary class="validation-summary" />
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="bi bi-door-closed me-2"></i>
+                                    Room Name <span class="text-danger">*</span>
+                                </label>
+                                <InputText class="form-control-modern" @bind-Value="roomModel.RoomName" placeholder="Enter room name" />
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="bi bi-tags me-2"></i>
+                                    Room Type <span class="text-danger">*</span>
+                                </label>
+                                <InputSelect class="form-control-modern" @bind-Value="roomModel.RoomType">
+                                    <option value="">Select room type</option>
+                                    <option value="Conference Room">Conference Room</option>
+                                    <option value="Meeting Room">Meeting Room</option>
+                                    <option value="Training Room">Training Room</option>
+                                    <option value="Event Hall">Event Hall</option>
+                                    <option value="Workspace">Workspace</option>
+                                    <option value="Lounge">Lounge</option>
+                                    <option value="Office">Office</option>
+                                </InputSelect>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="bi bi-people me-2"></i>
+                                    Capacity <span class="text-danger">*</span>
+                                </label>
+                                <InputNumber class="form-control-modern" @bind-Value="roomModel.Capacity" placeholder="Enter capacity" />
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="bi bi-circle-fill me-2"></i>
+                                    Status <span class="text-danger">*</span>
+                                </label>
+                                <InputSelect class="form-control-modern" @bind-Value="roomModel.Status">
+                                    <option value="">Select status</option>
+                                    <option value="Available">Available</option>
+                                    <option value="Not Available">Not Available</option>
+                                </InputSelect>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="bi bi-file-text me-2"></i>
+                                    Description
+                                </label>
+                                <InputTextArea class="form-control-modern" @bind-Value="roomModel.Description" rows="3" placeholder="Enter room description (optional)" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions mt-4">
+                        <button class="btn-modern btn-primary-modern" type="submit">
+                            <i class="bi bi-plus-circle me-2"></i>
+                            Add Room
+                        </button>
+                        <button class="btn-modern btn-secondary-modern" type="button" @onclick="CloseAddModal">
+                            <i class="bi bi-x-circle me-2"></i>
+                            Cancel
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+}
+
+@if (showEditModal)
+{
+    <div class="modal-overlay" @onclick="CloseEditModal">
+        <div class="modal-container" @onclick:stopPropagation="true">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="bi bi-pencil-square me-2"></i>
+                    Edit Room
+                </h3>
+                <button class="modal-close" @onclick="CloseEditModal">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <EditForm Model="@roomModel" OnValidSubmit="UpdateRoom">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary class="validation-summary" />
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="bi bi-door-closed me-2"></i>
+                                    Room Name <span class="text-danger">*</span>
+                                </label>
+                                <InputText class="form-control-modern" @bind-Value="roomModel.RoomName" placeholder="Enter room name" />
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="bi bi-tags me-2"></i>
+                                    Room Type <span class="text-danger">*</span>
+                                </label>
+                                <InputSelect class="form-control-modern" @bind-Value="roomModel.RoomType">
+                                    <option value="">Select room type</option>
+                                    <option value="Conference Room">Conference Room</option>
+                                    <option value="Meeting Room">Meeting Room</option>
+                                    <option value="Training Room">Training Room</option>
+                                    <option value="Event Hall">Event Hall</option>
+                                    <option value="Workspace">Workspace</option>
+                                    <option value="Lounge">Lounge</option>
+                                    <option value="Office">Office</option>
+                                </InputSelect>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="bi bi-people me-2"></i>
+                                    Capacity <span class="text-danger">*</span>
+                                </label>
+                                <InputNumber class="form-control-modern" @bind-Value="roomModel.Capacity" placeholder="Enter capacity" />
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="bi bi-circle-fill me-2"></i>
+                                    Status <span class="text-danger">*</span>
+                                </label>
+                                <InputSelect class="form-control-modern" @bind-Value="roomModel.Status">
+                                    <option value="">Select status</option>
+                                    <option value="Available">Available</option>
+                                    <option value="Not Available">Not Available</option>
+                                </InputSelect>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="bi bi-hash me-2"></i>
+                                    Room ID
+                                </label>
+                                <InputNumber class="form-control-modern" @bind-Value="roomModel.Id" disabled />
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="bi bi-file-text me-2"></i>
+                                    Description
+                                </label>
+                                <InputTextArea class="form-control-modern" @bind-Value="roomModel.Description" rows="3" placeholder="Enter room description (optional)" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions mt-4">
+                        <button class="btn-modern btn-primary-modern" type="submit">
+                            <i class="bi bi-check-circle me-2"></i>
+                            Update Room
+                        </button>
+                        <button class="btn-modern btn-secondary-modern" type="button" @onclick="CloseEditModal">
+                            <i class="bi bi-x-circle me-2"></i>
+                            Cancel
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
     private RoomModel roomModel = new();
     private List<RoomModel> roomList = new();
     private List<RoomModel> filteredRoomList = new();
+    private List<RoomModel> archivedRoomList = new();
     private string searchQuery = string.Empty;
     private string statusFilter = string.Empty;
-
+    private bool showAddModal = false;
+    private bool showEditModal = false;
     private int nextId = 1;
 
     protected override void OnInitialized()
@@ -255,44 +358,19 @@
         filteredRoomList = roomList;
     }
 
-    private void SaveRoom()
+    private void OpenAddModal()
     {
-        if (roomModel.Id == 0)
-        {
-            roomModel.Id = nextId++;
-            roomModel.CreatedAt = DateTime.Now;
-            roomModel.UpdatedAt = DateTime.Now;
-            roomList.Add(new RoomModel
-            {
-                Id = roomModel.Id,
-                RoomName = roomModel.RoomName,
-                RoomType = roomModel.RoomType,
-                Capacity = roomModel.Capacity,
-                Status = roomModel.Status,
-                Description = roomModel.Description,
-                CreatedAt = roomModel.CreatedAt,
-                UpdatedAt = roomModel.UpdatedAt
-            });
-        }
-        else
-        {
-            var existing = roomList.FirstOrDefault(r => r.Id == roomModel.Id);
-            if (existing != null)
-            {
-                existing.RoomName = roomModel.RoomName;
-                existing.RoomType = roomModel.RoomType;
-                existing.Capacity = roomModel.Capacity;
-                existing.Status = roomModel.Status;
-                existing.Description = roomModel.Description;
-                existing.UpdatedAt = DateTime.Now;
-            }
-        }
-
-        ClearForm();
-        FilterRooms();
+        roomModel = new RoomModel();
+        showAddModal = true;
     }
 
-    private void EditRoom(RoomModel room)
+    private void CloseAddModal()
+    {
+        showAddModal = false;
+        roomModel = new RoomModel();
+    }
+
+    private void OpenEditModal(RoomModel room)
     {
         roomModel = new RoomModel
         {
@@ -305,17 +383,58 @@
             CreatedAt = room.CreatedAt,
             UpdatedAt = room.UpdatedAt
         };
+        showEditModal = true;
     }
 
-    private void DeleteRoom(RoomModel room)
+    private void CloseEditModal()
     {
-        roomList.Remove(room);
+        showEditModal = false;
+        roomModel = new RoomModel();
+    }
+
+    private void SaveRoom()
+    {
+        roomModel.Id = nextId++;
+        roomModel.CreatedAt = DateTime.Now;
+        roomModel.UpdatedAt = DateTime.Now;
+        roomList.Add(new RoomModel
+        {
+            Id = roomModel.Id,
+            RoomName = roomModel.RoomName,
+            RoomType = roomModel.RoomType,
+            Capacity = roomModel.Capacity,
+            Status = roomModel.Status,
+            Description = roomModel.Description,
+            CreatedAt = roomModel.CreatedAt,
+            UpdatedAt = roomModel.UpdatedAt
+        });
+
+        CloseAddModal();
         FilterRooms();
     }
 
-    private void ClearForm()
+    private void UpdateRoom()
     {
-        roomModel = new RoomModel();
+        var existing = roomList.FirstOrDefault(r => r.Id == roomModel.Id);
+        if (existing != null)
+        {
+            existing.RoomName = roomModel.RoomName;
+            existing.RoomType = roomModel.RoomType;
+            existing.Capacity = roomModel.Capacity;
+            existing.Status = roomModel.Status;
+            existing.Description = roomModel.Description;
+            existing.UpdatedAt = DateTime.Now;
+        }
+
+        CloseEditModal();
+        FilterRooms();
+    }
+
+    private void ArchiveRoom(RoomModel room)
+    {
+        roomList.Remove(room);
+        archivedRoomList.Add(room);
+        FilterRooms();
     }
 
     private void FilterRooms()
@@ -350,7 +469,7 @@
 
 <style>
     .rooms-container {
-        padding: 2rem 0;
+        padding: 1rem 0;
     }
 
     .rooms-header {
@@ -382,7 +501,7 @@
     }
 
     .rooms-card-header {
-        padding: 1.5rem;
+        padding: 1rem 1.5rem;
         border-bottom: 1px solid #f3f4f6;
         background: #fafafa;
     }
@@ -397,7 +516,7 @@
     }
 
     .rooms-card-body {
-        padding: 1.5rem;
+        padding: 1.25rem;
     }
 
     .form-group {
@@ -424,8 +543,8 @@
     }
 
     .form-control-modern:focus {
-        border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        border-color: #111827;
+        box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.1);
     }
 
     .form-control-modern:disabled {
@@ -472,14 +591,14 @@
     }
 
     .btn-primary-modern {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: #111827;
         color: #ffffff;
-        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
     }
 
     .btn-primary-modern:hover {
+        background: #1f2937;
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        box-shadow: 0 4px 12px rgba(17, 24, 39, 0.2);
     }
 
     .btn-secondary-modern {
@@ -495,12 +614,12 @@
 
     .btn-outline-modern {
         background: #ffffff;
-        color: #667eea;
-        border: 2px solid #667eea;
+        color: #111827;
+        border: 2px solid #111827;
     }
 
     .btn-outline-modern:hover {
-        background: #667eea;
+        background: #111827;
         color: #ffffff;
     }
 
@@ -682,6 +801,94 @@
         font-size: 0.9375rem;
     }
 
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        padding: 1rem;
+        animation: fadeIn 0.2s ease;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+
+    .modal-container {
+        background: #ffffff;
+        border-radius: 16px;
+        width: 100%;
+        max-width: 600px;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        animation: slideUp 0.3s ease;
+    }
+
+    @@keyframes slideUp {
+        from {
+            transform: translateY(20px);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    .modal-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid #e5e7eb;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #fafafa;
+        border-radius: 16px 16px 0 0;
+    }
+
+    .modal-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #111827;
+        margin: 0;
+        display: flex;
+        align-items: center;
+    }
+
+    .modal-close {
+        width: 36px;
+        height: 36px;
+        border: none;
+        background: transparent;
+        border-radius: 8px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #6b7280;
+        transition: all 0.2s ease;
+    }
+
+    .modal-close:hover {
+        background: #f3f4f6;
+        color: #111827;
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+    }
+
     @@media (max-width: 1200px) {
         .table-modern {
             font-size: 0.875rem;
@@ -712,6 +919,15 @@
             font-size: 1.75rem;
         }
 
+        .rooms-header {
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .rooms-header .btn-modern {
+            width: 100%;
+        }
+
         .rooms-card-body {
             padding: 1rem;
         }
@@ -722,6 +938,11 @@
 
         .btn-modern {
             width: 100%;
+        }
+
+        .modal-container {
+            max-width: 100%;
+            margin: 1rem;
         }
     }
 
@@ -736,6 +957,11 @@
 
         .rooms-card-header,
         .rooms-card-body {
+            padding: 1rem;
+        }
+
+        .modal-header,
+        .modal-body {
             padding: 1rem;
         }
     }

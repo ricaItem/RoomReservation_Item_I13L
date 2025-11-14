@@ -1,5 +1,8 @@
 ﻿html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
 }
 
 a, .btn-link {
@@ -123,32 +126,29 @@ h1:focus {
 .sidebar {
     height: 100vh;
     width: 260px;
-    position: fixed;
-    left: 0;
-    top: 0;
     background: #ffffff;
     color: #1a1a1a;
     padding: 0;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.15);
     border-right: 1px solid #e5e7eb;
-    z-index: 1000;
     display: flex;
     flex-direction: column;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     overflow-y: auto;
     overflow-x: hidden;
+    flex-shrink: 0;
 }
 
 .sidebar-header {
-    padding: 2rem 1.5rem;
+    padding: 1.5rem 1rem;
     text-align: center;
     border-bottom: 1px solid #f3f4f6;
     background: #fafafa;
 }
 
 .sidebar-header h4 {
-    margin: 0.75rem 0 0 0;
-    font-size: 1.25rem;
+    margin: 0.5rem 0 0 0;
+    font-size: 1.125rem;
     font-weight: 600;
     color: #111827;
     letter-spacing: -0.02em;
@@ -164,10 +164,12 @@ h1:focus {
 
 
 .sidebar .nav {
-    padding: 1.5rem 1rem;
+    padding: 1rem;
     flex: 1;
     display: flex;
     flex-direction: column;
+    gap: 0.25rem;
+    min-height: 0;
 }
 
 .sidebar .nav-link {
@@ -175,11 +177,10 @@ h1:focus {
     font-weight: 500;
     font-size: 0.9375rem;
     border-radius: 10px;
-    padding: 0.875rem 1rem;
+    padding: 0.75rem 1rem;
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    margin: 0.25rem 0;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     text-decoration: none;
     position: relative;
@@ -234,8 +235,8 @@ h1:focus {
     font-weight: 600;
     font-size: 0.9375rem;
     border-radius: 10px;
-    padding: 0.875rem 1rem;
-    margin: 1rem;
+    padding: 0.75rem 1rem;
+    margin: auto 1rem 1rem 1rem;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     align-items: center;
@@ -263,16 +264,14 @@ h1:focus {
 
 
 .page main {
-    margin-left: 260px;
-    transition: margin-left 0.2s ease;
+    flex: 1;
     position: relative;
-    z-index: 1;
-    width: calc(100% - 260px);
+    min-width: 0;
 }
 
 
 .content {
-    padding: 1.5rem;
+    padding: 1rem 1rem 1rem 0.5rem;
 }
 
 
@@ -281,21 +280,20 @@ h1:focus {
         width: 240px;
     }
 
-    .page main {
-        margin-left: 240px;
-        width: calc(100% - 240px);
-    }
-
     .content {
-        padding: 1.25rem;
+        padding: 1rem 1rem 1rem 0.5rem;
     }
 }
 
 @media (max-width: 768px) {
     .sidebar {
+        position: fixed;
         left: -260px;
+        top: 0;
+        z-index: 1000;
         box-shadow: 2px 0 18px rgba(0,0,0,0.1);
         width: 260px;
+        transition: left 0.3s ease;
     }
 
         .sidebar.open {
@@ -313,36 +311,26 @@ h1:focus {
         z-index: 999;
     }
 
-    .page main {
-        margin-left: 0;
-        width: 100%;
-    }
-
     .content {
-        padding: 1rem;
-    }
-
-    .top-row {
-        padding-left: 1rem !important;
-        padding-right: 1rem !important;
+        padding: 0.75rem 0.75rem 0.75rem 0.5rem;
     }
 
     .sidebar-header {
-        padding: 1.5rem 1rem;
+        padding: 1rem;
     }
 
     .sidebar .nav {
-        padding: 1rem 0.75rem;
+        padding: 0.75rem;
     }
 
     .sidebar .nav-link {
-        padding: 0.75rem;
+        padding: 0.625rem;
         font-size: 0.875rem;
     }
 
     .logout-btn {
-        margin: 0.75rem;
-        padding: 0.75rem;
+        margin: 0.5rem 0 0 0;
+        padding: 0.625rem;
         font-size: 0.875rem;
     }
 }
@@ -350,12 +338,6 @@ h1:focus {
 
 @media (max-width: 480px) {
     .content {
-        padding: 0.75rem;
-    }
-
-    .top-row {
-        padding-left: 0.75rem !important;
-        padding-right: 0.75rem !important;
-        height: 3rem;
+        padding: 0.5rem 0.5rem 0.5rem 0.25rem;
     }
 }

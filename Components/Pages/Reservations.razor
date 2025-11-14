@@ -1,168 +1,44 @@
 @page "/reservations"
 
-<div class="rooms-container">
-    <div class="rooms-header mb-4">
+<div class="reservations-container">
+    <div class="reservations-header mb-4">
         <div>
-            <h1 class="rooms-title">Reservation Management</h1>
-            <p class="rooms-subtitle">Create, update, and manage room reservations</p>
+            <h1 class="reservations-title">Reservation Management</h1>
+            <p class="reservations-subtitle">Create, update, and manage room reservations</p>
         </div>
+        <button class="btn-modern btn-primary-modern" @onclick="OpenAddModal">
+            <i class="bi bi-plus-circle me-2"></i>
+            Add Reservation
+        </button>
     </div>
 
-    <div class="rooms-card mb-4">
-        <div class="rooms-card-header">
-            <h3 class="rooms-card-title">
-                <i class="bi bi-plus-circle me-2"></i>
-                @(reservationModel.Id == 0 ? "Add New Reservation" : "Update Reservation")
-            </h3>
-        </div>
-        <div class="rooms-card-body">
-            <EditForm Model="@reservationModel" OnValidSubmit="SaveReservation">
-                <DataAnnotationsValidator />
-                <ValidationSummary class="validation-summary" />
-
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="form-label">
-                                <i class="bi bi-door-closed me-2"></i>
-                                Room <span class="text-danger">*</span>
-                            </label>
-                            <InputSelect class="form-control-modern" @bind-Value="reservationModel.RoomName">
-                                <option value="">Select room</option>
-                                @foreach (var room in availableRooms)
-                                {
-                                    <option value="@room">@room</option>
-                                }
-                            </InputSelect>
-                        </div>
-                    </div>
-
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="form-label">
-                                <i class="bi bi-person me-2"></i>
-                                Customer Name <span class="text-danger">*</span>
-                            </label>
-                            <InputText class="form-control-modern" @bind-Value="reservationModel.CustomerName" placeholder="Enter customer name" />
-                        </div>
-                    </div>
-
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            <label class="form-label">
-                                <i class="bi bi-telephone me-2"></i>
-                                Contact Number <span class="text-danger">*</span>
-                            </label>
-                            <InputText class="form-control-modern" @bind-Value="reservationModel.ContactNumber" placeholder="Enter contact number" />
-                        </div>
-                    </div>
-
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            <label class="form-label">
-                                <i class="bi bi-envelope me-2"></i>
-                                Email
-                            </label>
-                            <InputText type="email" class="form-control-modern" @bind-Value="reservationModel.Email" placeholder="Enter email (optional)" />
-                        </div>
-                    </div>
-
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            <label class="form-label">
-                                <i class="bi bi-circle-fill me-2"></i>
-                                Status <span class="text-danger">*</span>
-                            </label>
-                            <InputSelect class="form-control-modern" @bind-Value="reservationModel.Status">
-                                <option value="">Select status</option>
-                                <option value="Reserved">Reserved</option>
-                                <option value="Checked-in">Checked-in</option>
-                                <option value="Cancelled">Cancelled</option>
-                            </InputSelect>
-                        </div>
-                    </div>
-
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="form-label">
-                                <i class="bi bi-calendar-check me-2"></i>
-                                Check-In Date <span class="text-danger">*</span>
-                            </label>
-                            <InputDate class="form-control-modern" @bind-Value="reservationModel.CheckInDate" />
-                        </div>
-                    </div>
-
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="form-label">
-                                <i class="bi bi-calendar-x me-2"></i>
-                                Check-Out Date <span class="text-danger">*</span>
-                            </label>
-                            <InputDate class="form-control-modern" @bind-Value="reservationModel.CheckOutDate" />
-                        </div>
-                    </div>
-
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            <label class="form-label">
-                                <i class="bi bi-hash me-2"></i>
-                                Reservation ID
-                            </label>
-                            <InputNumber class="form-control-modern" @bind-Value="reservationModel.Id" disabled />
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-actions mt-4">
-                    @if (reservationModel.Id == 0)
-                    {
-                        <button class="btn-modern btn-primary-modern" type="submit">
-                            <i class="bi bi-plus-circle me-2"></i>
-                            Add Reservation
-                        </button>
-                    }
-                    else
-                    {
-                        <button class="btn-modern btn-primary-modern" type="submit">
-                            <i class="bi bi-pencil-square me-2"></i>
-                            Update Reservation
-                        </button>
-                    }
-                    <button class="btn-modern btn-secondary-modern" type="button" @onclick="ClearForm">
-                        <i class="bi bi-x-circle me-2"></i>
-                        Clear
-                    </button>
-                </div>
-            </EditForm>
-        </div>
-    </div>
-
-    <div class="rooms-card mb-4">
-        <div class="rooms-card-body">
+    <div class="reservations-card mb-4">
+        <div class="reservations-card-body">
             <div class="row g-3 align-items-end">
-                <div class="col-md-5">
+                <div class="col-md-4">
                     <div class="form-group">
                         <label class="form-label">
                             <i class="bi bi-search me-2"></i>
-                            Search Reservations
+                            Search
                         </label>
                         <div class="search-wrapper">
                             <i class="bi bi-search search-icon"></i>
-                            <InputText class="form-control-modern search-input" @bind-Value="searchQuery" @oninput="FilterReservations" placeholder="Search by customer name, room, or status..." />
+                            <InputText class="form-control-modern search-input" @bind-Value="searchQuery" @oninput="FilterReservations" placeholder="Search by customer name, room..." />
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <div class="form-group">
                         <label class="form-label">
                             <i class="bi bi-funnel me-2"></i>
-                            Filter by Status
+                            Status
                         </label>
                         <InputSelect class="form-control-modern" @bind-Value="statusFilter" @onchange="FilterReservations">
                             <option value="">All Status</option>
-                            <option value="Reserved">Reserved</option>
-                            <option value="Checked-in">Checked-in</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Confirmed">Confirmed</option>
                             <option value="Cancelled">Cancelled</option>
+                            <option value="Completed">Completed</option>
                         </InputSelect>
                     </div>
                 </div>
@@ -170,9 +46,45 @@
                     <div class="form-group">
                         <label class="form-label">
                             <i class="bi bi-calendar me-2"></i>
-                            Filter by Date
+                            Start Date
                         </label>
-                        <InputDate class="form-control-modern" @bind-Value="dateFilter" @onchange="FilterReservations" />
+                        <InputDate class="form-control-modern" @bind-Value="startDateFilter" @onchange="FilterReservations" />
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="bi bi-calendar me-2"></i>
+                            End Date
+                        </label>
+                        <InputDate class="form-control-modern" @bind-Value="endDateFilter" @onchange="FilterReservations" />
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="bi bi-door-closed me-2"></i>
+                            Room Type
+                        </label>
+                        <InputSelect class="form-control-modern" @bind-Value="roomTypeFilter" @onchange="FilterReservations">
+                            <option value="">All Types</option>
+                            <option value="Conference Room">Conference Room</option>
+                            <option value="Meeting Room">Meeting Room</option>
+                            <option value="Training Room">Training Room</option>
+                            <option value="Event Hall">Event Hall</option>
+                            <option value="Workspace">Workspace</option>
+                            <option value="Lounge">Lounge</option>
+                            <option value="Office">Office</option>
+                        </InputSelect>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="bi bi-person me-2"></i>
+                            Customer
+                        </label>
+                        <InputText class="form-control-modern" @bind-Value="customerFilter" @oninput="FilterReservations" placeholder="Customer name" />
                     </div>
                 </div>
                 <div class="col-md-2">
@@ -185,17 +97,17 @@
         </div>
     </div>
 
-    <div class="rooms-card">
-        <div class="rooms-card-header">
+    <div class="reservations-card">
+        <div class="reservations-card-header">
             <div class="d-flex justify-content-between align-items-center">
-                <h3 class="rooms-card-title">
+                <h3 class="reservations-card-title">
                     <i class="bi bi-list-ul me-2"></i>
                     Reservation List
                     <span class="badge-modern">@filteredReservationList.Count</span>
                 </h3>
             </div>
         </div>
-        <div class="rooms-card-body">
+        <div class="reservations-card-body">
             @if (filteredReservationList.Count == 0)
             {
                 <div class="empty-state">
@@ -210,24 +122,73 @@
                     <table class="table-modern">
                         <thead>
                             <tr>
-                                <th>Reservation ID</th>
-                                <th>Room Name</th>
-                                <th>Customer Name</th>
-                                <th>Contact</th>
-                                <th>Check-in</th>
-                                <th>Check-out</th>
-                                <th>Status</th>
+                                <th class="sortable" @onclick="@(() => SortBy("Id"))">
+                                    Reservation ID
+                                    @if (sortColumn == "Id")
+                                    {
+                                        <i class="bi bi-arrow-@(sortDirection == "asc" ? "up" : "down")"></i>
+                                    }
+                                </th>
+
+                                <th class="sortable" @onclick="@(() => SortBy("CustomerName"))">
+                                    Customer Name
+                                    @if (sortColumn == "CustomerName")
+                                    {
+                                        <i class="bi bi-arrow-@(sortDirection == "asc" ? "up" : "down")"></i>
+                                    }
+                                </th>
+
+                                <th class="sortable" @onclick="@(() => SortBy("RoomName"))">
+                                    Room/Item Reserved
+                                    @if (sortColumn == "RoomName")
+                                    {
+                                        <i class="bi bi-arrow-@(sortDirection == "asc" ? "up" : "down")"></i>
+                                    }
+                                </th>
+
+                                <th class="sortable" @onclick="@(() => SortBy("CheckInDate"))">
+                                    Check-in
+                                    @if (sortColumn == "CheckInDate")
+                                    {
+                                        <i class="bi bi-arrow-@(sortDirection == "asc" ? "up" : "down")"></i>
+                                    }
+                                </th>
+
+                                <th class="sortable" @onclick="@(() => SortBy("CheckOutDate"))">
+                                    Check-out
+                                    @if (sortColumn == "CheckOutDate")
+                                    {
+                                        <i class="bi bi-arrow-@(sortDirection == "asc" ? "up" : "down")"></i>
+                                    }
+                                </th>
+
+                                <th class="sortable" @onclick="@(() => SortBy("Status"))">
+                                    Status
+                                    @if (sortColumn == "Status")
+                                    {
+                                        <i class="bi bi-arrow-@(sortDirection == "asc" ? "up" : "down")"></i>
+                                    }
+                                </th>
+
+                                <th class="sortable" @onclick="@(() => SortBy("PaymentStatus"))">
+                                    Payment Status
+                                    @if (sortColumn == "PaymentStatus")
+                                    {
+                                        <i class="bi bi-arrow-@(sortDirection == "asc" ? "up" : "down")"></i>
+                                    }
+                                </th>
+
                                 <th class="text-center">Actions</th>
                             </tr>
                         </thead>
+
                         <tbody>
                             @foreach (var reservation in filteredReservationList)
                             {
                                 <tr class="@GetStatusRowClass(reservation.Status)">
                                     <td><strong>#@reservation.Id</strong></td>
-                                    <td>@reservation.RoomName</td>
                                     <td>@reservation.CustomerName</td>
-                                    <td>@reservation.ContactNumber</td>
+                                    <td>@reservation.RoomName</td>
                                     <td>@reservation.CheckInDate.ToString("MM/dd/yyyy")</td>
                                     <td>@reservation.CheckOutDate.ToString("MM/dd/yyyy")</td>
                                     <td>
@@ -237,10 +198,30 @@
                                         </span>
                                     </td>
                                     <td>
+                                        <span class="payment-badge @GetPaymentBadgeClass(reservation.PaymentStatus)">
+                                            @reservation.PaymentStatus
+                                        </span>
+                                    </td>
+                                    <td>
                                         <div class="action-buttons">
-                                            <button class="btn-action btn-edit" @onclick="() => EditReservation(reservation)" title="Edit">
+                                            <button class="btn-action btn-view" @onclick="() => OpenViewModal(reservation)" title="View Details">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            <button class="btn-action btn-edit" @onclick="() => OpenEditModal(reservation)" title="Edit">
                                                 <i class="bi bi-pencil-square"></i>
                                             </button>
+                                            @if (reservation.Status == "Pending")
+                                            {
+                                                <button class="btn-action btn-approve" @onclick="() => ApproveReservation(reservation)" title="Approve">
+                                                    <i class="bi bi-check-circle"></i>
+                                                </button>
+                                            }
+                                            @if (reservation.Status != "Cancelled" && reservation.Status != "Completed")
+                                            {
+                                                <button class="btn-action btn-cancel" @onclick="() => CancelReservation(reservation)" title="Cancel">
+                                                    <i class="bi bi-x-circle"></i>
+                                                </button>
+                                            }
                                             <button class="btn-action btn-delete" @onclick="() => DeleteReservation(reservation)" title="Delete">
                                                 <i class="bi bi-trash"></i>
                                             </button>
@@ -256,6 +237,393 @@
     </div>
 </div>
 
+@if (showAddModal)
+{
+    <div class="modal-overlay" @onclick="CloseAddModal">
+        <div class="modal-container" @onclick:stopPropagation="true">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="bi bi-plus-circle me-2"></i>
+                    Add New Reservation
+                </h3>
+                <button class="modal-close" @onclick="CloseAddModal">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <EditForm Model="@reservationModel" OnValidSubmit="SaveReservation">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary class="validation-summary" />
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="bi bi-door-closed me-2"></i>
+                                    Room <span class="text-danger">*</span>
+                                </label>
+                                <InputSelect class="form-control-modern" @bind-Value="reservationModel.RoomName">
+                                    <option value="">Select room</option>
+                                    @foreach (var room in availableRooms)
+                                    {
+                                        <option value="@room">@room</option>
+                                    }
+                                </InputSelect>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="bi bi-person me-2"></i>
+                                    Customer Name <span class="text-danger">*</span>
+                                </label>
+                                <InputText class="form-control-modern" @bind-Value="reservationModel.CustomerName" placeholder="Enter customer name" />
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="bi bi-telephone me-2"></i>
+                                    Contact Number <span class="text-danger">*</span>
+                                </label>
+                                <InputText class="form-control-modern" @bind-Value="reservationModel.ContactNumber" placeholder="Enter contact number" />
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="bi bi-envelope me-2"></i>
+                                    Email
+                                </label>
+                                <InputText type="email" class="form-control-modern" @bind-Value="reservationModel.Email" placeholder="Enter email (optional)" />
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="bi bi-calendar-check me-2"></i>
+                                    Check-In Date <span class="text-danger">*</span>
+                                </label>
+                                <InputDate class="form-control-modern" @bind-Value="reservationModel.CheckInDate" />
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="bi bi-calendar-x me-2"></i>
+                                    Check-Out Date <span class="text-danger">*</span>
+                                </label>
+                                <InputDate class="form-control-modern" @bind-Value="reservationModel.CheckOutDate" />
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="bi bi-circle-fill me-2"></i>
+                                    Status <span class="text-danger">*</span>
+                                </label>
+                                <InputSelect class="form-control-modern" @bind-Value="reservationModel.Status">
+                                    <option value="">Select status</option>
+                                    <option value="Pending">Pending</option>
+                                    <option value="Confirmed">Confirmed</option>
+                                    <option value="Cancelled">Cancelled</option>
+                                    <option value="Completed">Completed</option>
+                                </InputSelect>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="bi bi-credit-card me-2"></i>
+                                    Payment Status <span class="text-danger">*</span>
+                                </label>
+                                <InputSelect class="form-control-modern" @bind-Value="reservationModel.PaymentStatus">
+                                    <option value="">Select payment status</option>
+                                    <option value="Pending">Pending</option>
+                                    <option value="Paid">Paid</option>
+                                    <option value="Partial">Partial</option>
+                                    <option value="Refunded">Refunded</option>
+                                </InputSelect>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions mt-4">
+                        <button class="btn-modern btn-primary-modern" type="submit">
+                            <i class="bi bi-plus-circle me-2"></i>
+                            Add Reservation
+                        </button>
+                        <button class="btn-modern btn-secondary-modern" type="button" @onclick="CloseAddModal">
+                            <i class="bi bi-x-circle me-2"></i>
+                            Cancel
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+}
+
+@if (showEditModal)
+{
+    <div class="modal-overlay" @onclick="CloseEditModal">
+        <div class="modal-container" @onclick:stopPropagation="true">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="bi bi-pencil-square me-2"></i>
+                    Edit Reservation
+                </h3>
+                <button class="modal-close" @onclick="CloseEditModal">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <EditForm Model="@reservationModel" OnValidSubmit="UpdateReservation">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary class="validation-summary" />
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="bi bi-hash me-2"></i>
+                                    Reservation ID
+                                </label>
+                                <InputNumber class="form-control-modern" @bind-Value="reservationModel.Id" disabled />
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="bi bi-door-closed me-2"></i>
+                                    Room <span class="text-danger">*</span>
+                                </label>
+                                <InputSelect class="form-control-modern" @bind-Value="reservationModel.RoomName">
+                                    <option value="">Select room</option>
+                                    @foreach (var room in availableRooms)
+                                    {
+                                        <option value="@room">@room</option>
+                                    }
+                                </InputSelect>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="bi bi-person me-2"></i>
+                                    Customer Name <span class="text-danger">*</span>
+                                </label>
+                                <InputText class="form-control-modern" @bind-Value="reservationModel.CustomerName" placeholder="Enter customer name" />
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="bi bi-telephone me-2"></i>
+                                    Contact Number <span class="text-danger">*</span>
+                                </label>
+                                <InputText class="form-control-modern" @bind-Value="reservationModel.ContactNumber" placeholder="Enter contact number" />
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="bi bi-envelope me-2"></i>
+                                    Email
+                                </label>
+                                <InputText type="email" class="form-control-modern" @bind-Value="reservationModel.Email" placeholder="Enter email (optional)" />
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="bi bi-calendar-check me-2"></i>
+                                    Check-In Date <span class="text-danger">*</span>
+                                </label>
+                                <InputDate class="form-control-modern" @bind-Value="reservationModel.CheckInDate" />
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="bi bi-calendar-x me-2"></i>
+                                    Check-Out Date <span class="text-danger">*</span>
+                                </label>
+                                <InputDate class="form-control-modern" @bind-Value="reservationModel.CheckOutDate" />
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="bi bi-circle-fill me-2"></i>
+                                    Status <span class="text-danger">*</span>
+                                </label>
+                                <InputSelect class="form-control-modern" @bind-Value="reservationModel.Status">
+                                    <option value="">Select status</option>
+                                    <option value="Pending">Pending</option>
+                                    <option value="Confirmed">Confirmed</option>
+                                    <option value="Cancelled">Cancelled</option>
+                                    <option value="Completed">Completed</option>
+                                </InputSelect>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="bi bi-credit-card me-2"></i>
+                                    Payment Status <span class="text-danger">*</span>
+                                </label>
+                                <InputSelect class="form-control-modern" @bind-Value="reservationModel.PaymentStatus">
+                                    <option value="">Select payment status</option>
+                                    <option value="Pending">Pending</option>
+                                    <option value="Paid">Paid</option>
+                                    <option value="Partial">Partial</option>
+                                    <option value="Refunded">Refunded</option>
+                                </InputSelect>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions mt-4">
+                        <button class="btn-modern btn-primary-modern" type="submit">
+                            <i class="bi bi-check-circle me-2"></i>
+                            Update Reservation
+                        </button>
+                        <button class="btn-modern btn-secondary-modern" type="button" @onclick="CloseEditModal">
+                            <i class="bi bi-x-circle me-2"></i>
+                            Cancel
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+}
+
+@if (showViewModal)
+{
+    <div class="modal-overlay" @onclick="CloseViewModal">
+        <div class="modal-container modal-view" @onclick:stopPropagation="true">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="bi bi-eye me-2"></i>
+                    Reservation Details
+                </h3>
+                <button class="modal-close" @onclick="CloseViewModal">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                @if (selectedReservation != null)
+                {
+                    <div class="detail-view">
+                        <div class="detail-section">
+                            <h4 class="detail-section-title">Reservation Information</h4>
+                            <div class="detail-grid">
+                                <div class="detail-item">
+                                    <span class="detail-label">Reservation ID:</span>
+                                    <span class="detail-value">#@selectedReservation.Id</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Room:</span>
+                                    <span class="detail-value">@selectedReservation.RoomName</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Status:</span>
+                                    <span class="detail-value">
+                                        <span class="status-badge @GetStatusBadgeClass(selectedReservation.Status)">
+                                            @selectedReservation.Status
+                                        </span>
+                                    </span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Payment Status:</span>
+                                    <span class="detail-value">
+                                        <span class="payment-badge @GetPaymentBadgeClass(selectedReservation.PaymentStatus)">
+                                            @selectedReservation.PaymentStatus
+                                        </span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="detail-section">
+                            <h4 class="detail-section-title">Customer Information</h4>
+                            <div class="detail-grid">
+                                <div class="detail-item">
+                                    <span class="detail-label">Customer Name:</span>
+                                    <span class="detail-value">@selectedReservation.CustomerName</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Contact Number:</span>
+                                    <span class="detail-value">@selectedReservation.ContactNumber</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Email:</span>
+                                    <span class="detail-value">@(string.IsNullOrEmpty(selectedReservation.Email) ? "N/A" : selectedReservation.Email)</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="detail-section">
+                            <h4 class="detail-section-title">Reservation Dates</h4>
+                            <div class="detail-grid">
+                                <div class="detail-item">
+                                    <span class="detail-label">Check-In Date:</span>
+                                    <span class="detail-value">@selectedReservation.CheckInDate.ToString("MM/dd/yyyy")</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Check-Out Date:</span>
+                                    <span class="detail-value">@selectedReservation.CheckOutDate.ToString("MM/dd/yyyy")</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Duration:</span>
+                                    <span class="detail-value">@((selectedReservation.CheckOutDate - selectedReservation.CheckInDate).Days) days</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="detail-section">
+                            <h4 class="detail-section-title">Timestamps</h4>
+                            <div class="detail-grid">
+                                <div class="detail-item">
+                                    <span class="detail-label">Created At:</span>
+                                    <span class="detail-value">@selectedReservation.CreatedAt.ToString("MM/dd/yyyy HH:mm")</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Updated At:</span>
+                                    <span class="detail-value">@selectedReservation.UpdatedAt.ToString("MM/dd/yyyy HH:mm")</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="modal-footer">
+                <button class="btn-modern btn-secondary-modern" @onclick="CloseViewModal">
+                    <i class="bi bi-x-circle me-2"></i>
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
     private ReservationModel reservationModel = new();
     private List<ReservationModel> reservationList = new();
@@ -263,8 +631,16 @@
     private List<string> availableRooms = new();
     private string searchQuery = string.Empty;
     private string statusFilter = string.Empty;
-    private DateTime? dateFilter;
-
+    private DateTime? startDateFilter;
+    private DateTime? endDateFilter;
+    private string roomTypeFilter = string.Empty;
+    private string customerFilter = string.Empty;
+    private bool showAddModal = false;
+    private bool showEditModal = false;
+    private bool showViewModal = false;
+    private ReservationModel? selectedReservation;
+    private string sortColumn = "Id";
+    private string sortDirection = "asc";
     private int nextId = 1;
 
     protected override void OnInitialized()
@@ -284,52 +660,25 @@
         filteredReservationList = reservationList;
     }
 
-    private void SaveReservation()
+    private void OpenAddModal()
     {
-        if (reservationModel.Id == 0)
+        reservationModel = new ReservationModel
         {
-            reservationModel.Id = nextId++;
-            reservationModel.CreatedAt = DateTime.Now;
-            reservationModel.UpdatedAt = DateTime.Now;
-            if (string.IsNullOrEmpty(reservationModel.Status))
-            {
-                reservationModel.Status = "Reserved";
-            }
-            reservationList.Add(new ReservationModel
-            {
-                Id = reservationModel.Id,
-                RoomName = reservationModel.RoomName,
-                CustomerName = reservationModel.CustomerName,
-                ContactNumber = reservationModel.ContactNumber,
-                Email = reservationModel.Email,
-                CheckInDate = reservationModel.CheckInDate,
-                CheckOutDate = reservationModel.CheckOutDate,
-                Status = reservationModel.Status,
-                CreatedAt = reservationModel.CreatedAt,
-                UpdatedAt = reservationModel.UpdatedAt
-            });
-        }
-        else
-        {
-            var existing = reservationList.FirstOrDefault(r => r.Id == reservationModel.Id);
-            if (existing != null)
-            {
-                existing.RoomName = reservationModel.RoomName;
-                existing.CustomerName = reservationModel.CustomerName;
-                existing.ContactNumber = reservationModel.ContactNumber;
-                existing.Email = reservationModel.Email;
-                existing.CheckInDate = reservationModel.CheckInDate;
-                existing.CheckOutDate = reservationModel.CheckOutDate;
-                existing.Status = reservationModel.Status;
-                existing.UpdatedAt = DateTime.Now;
-            }
-        }
-
-        ClearForm();
-        FilterReservations();
+            CheckInDate = DateTime.Today,
+            CheckOutDate = DateTime.Today.AddDays(1),
+            Status = "Pending",
+            PaymentStatus = "Pending"
+        };
+        showAddModal = true;
     }
 
-    private void EditReservation(ReservationModel reservation)
+    private void CloseAddModal()
+    {
+        showAddModal = false;
+        reservationModel = new ReservationModel();
+    }
+
+    private void OpenEditModal(ReservationModel reservation)
     {
         reservationModel = new ReservationModel
         {
@@ -341,9 +690,95 @@
             CheckInDate = reservation.CheckInDate,
             CheckOutDate = reservation.CheckOutDate,
             Status = reservation.Status,
+            PaymentStatus = reservation.PaymentStatus,
             CreatedAt = reservation.CreatedAt,
             UpdatedAt = reservation.UpdatedAt
         };
+        showEditModal = true;
+    }
+
+    private void CloseEditModal()
+    {
+        showEditModal = false;
+        reservationModel = new ReservationModel();
+    }
+
+    private void OpenViewModal(ReservationModel reservation)
+    {
+        selectedReservation = reservation;
+        showViewModal = true;
+    }
+
+    private void CloseViewModal()
+    {
+        showViewModal = false;
+        selectedReservation = null;
+    }
+
+    private void SaveReservation()
+    {
+        reservationModel.Id = nextId++;
+        reservationModel.CreatedAt = DateTime.Now;
+        reservationModel.UpdatedAt = DateTime.Now;
+        if (string.IsNullOrEmpty(reservationModel.Status))
+        {
+            reservationModel.Status = "Pending";
+        }
+        if (string.IsNullOrEmpty(reservationModel.PaymentStatus))
+        {
+            reservationModel.PaymentStatus = "Pending";
+        }
+        reservationList.Add(new ReservationModel
+        {
+            Id = reservationModel.Id,
+            RoomName = reservationModel.RoomName,
+            CustomerName = reservationModel.CustomerName,
+            ContactNumber = reservationModel.ContactNumber,
+            Email = reservationModel.Email,
+            CheckInDate = reservationModel.CheckInDate,
+            CheckOutDate = reservationModel.CheckOutDate,
+            Status = reservationModel.Status,
+            PaymentStatus = reservationModel.PaymentStatus,
+            CreatedAt = reservationModel.CreatedAt,
+            UpdatedAt = reservationModel.UpdatedAt
+        });
+
+        CloseAddModal();
+        FilterReservations();
+    }
+
+    private void UpdateReservation()
+    {
+        var existing = reservationList.FirstOrDefault(r => r.Id == reservationModel.Id);
+        if (existing != null)
+        {
+            existing.RoomName = reservationModel.RoomName;
+            existing.CustomerName = reservationModel.CustomerName;
+            existing.ContactNumber = reservationModel.ContactNumber;
+            existing.Email = reservationModel.Email;
+            existing.CheckInDate = reservationModel.CheckInDate;
+            existing.CheckOutDate = reservationModel.CheckOutDate;
+            existing.Status = reservationModel.Status;
+            existing.PaymentStatus = reservationModel.PaymentStatus;
+            existing.UpdatedAt = DateTime.Now;
+        }
+
+        CloseEditModal();
+        FilterReservations();
+    }
+
+    private void ApproveReservation(ReservationModel reservation)
+    {
+        reservation.Status = "Confirmed";
+        reservation.UpdatedAt = DateTime.Now;
+        FilterReservations();
+    }
+
+    private void CancelReservation(ReservationModel reservation)
+    {
+        reservation.Status = "Cancelled";
+        reservation.UpdatedAt = DateTime.Now;
+        FilterReservations();
     }
 
     private void DeleteReservation(ReservationModel reservation)
@@ -352,12 +787,47 @@
         FilterReservations();
     }
 
-    private void ClearForm()
+    private void SortBy(string column)
     {
-        reservationModel = new ReservationModel
+        if (sortColumn == column)
         {
-            CheckInDate = DateTime.Today,
-            CheckOutDate = DateTime.Today.AddDays(1)
+            sortDirection = sortDirection == "asc" ? "desc" : "asc";
+        }
+        else
+        {
+            sortColumn = column;
+            sortDirection = "asc";
+        }
+
+        ApplySorting();
+    }
+
+    private void ApplySorting()
+    {
+        filteredReservationList = sortColumn switch
+        {
+            "Id" => sortDirection == "asc" 
+                ? filteredReservationList.OrderBy(r => r.Id).ToList()
+                : filteredReservationList.OrderByDescending(r => r.Id).ToList(),
+            "CustomerName" => sortDirection == "asc"
+                ? filteredReservationList.OrderBy(r => r.CustomerName).ToList()
+                : filteredReservationList.OrderByDescending(r => r.CustomerName).ToList(),
+            "RoomName" => sortDirection == "asc"
+                ? filteredReservationList.OrderBy(r => r.RoomName).ToList()
+                : filteredReservationList.OrderByDescending(r => r.RoomName).ToList(),
+            "CheckInDate" => sortDirection == "asc"
+                ? filteredReservationList.OrderBy(r => r.CheckInDate).ToList()
+                : filteredReservationList.OrderByDescending(r => r.CheckInDate).ToList(),
+            "CheckOutDate" => sortDirection == "asc"
+                ? filteredReservationList.OrderBy(r => r.CheckOutDate).ToList()
+                : filteredReservationList.OrderByDescending(r => r.CheckOutDate).ToList(),
+            "Status" => sortDirection == "asc"
+                ? filteredReservationList.OrderBy(r => r.Status).ToList()
+                : filteredReservationList.OrderByDescending(r => r.Status).ToList(),
+            "PaymentStatus" => sortDirection == "asc"
+                ? filteredReservationList.OrderBy(r => r.PaymentStatus).ToList()
+                : filteredReservationList.OrderByDescending(r => r.PaymentStatus).ToList(),
+            _ => filteredReservationList
         };
     }
 
@@ -369,16 +839,23 @@
              res.RoomName.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
              res.Status.Contains(searchQuery, StringComparison.OrdinalIgnoreCase)) &&
             (string.IsNullOrEmpty(statusFilter) || res.Status == statusFilter) &&
-            (!dateFilter.HasValue || 
-             (res.CheckInDate <= dateFilter.Value && res.CheckOutDate >= dateFilter.Value))
+            (!startDateFilter.HasValue || res.CheckInDate >= startDateFilter.Value) &&
+            (!endDateFilter.HasValue || res.CheckOutDate <= endDateFilter.Value) &&
+            (string.IsNullOrEmpty(roomTypeFilter) || res.RoomName.Contains(roomTypeFilter, StringComparison.OrdinalIgnoreCase)) &&
+            (string.IsNullOrEmpty(customerFilter) || res.CustomerName.Contains(customerFilter, StringComparison.OrdinalIgnoreCase))
         ).ToList();
+
+        ApplySorting();
     }
 
     private void ClearFilters()
     {
         searchQuery = string.Empty;
         statusFilter = string.Empty;
-        dateFilter = null;
+        startDateFilter = null;
+        endDateFilter = null;
+        roomTypeFilter = string.Empty;
+        customerFilter = string.Empty;
         FilterReservations();
     }
 
@@ -386,9 +863,22 @@
     {
         return status switch
         {
-            "Reserved" => "status-reserved",
-            "Checked-in" => "status-checkedin",
+            "Pending" => "status-pending",
+            "Confirmed" => "status-confirmed",
             "Cancelled" => "status-cancelled",
+            "Completed" => "status-completed",
+            _ => ""
+        };
+    }
+
+    private string GetPaymentBadgeClass(string paymentStatus)
+    {
+        return paymentStatus switch
+        {
+            "Pending" => "payment-pending",
+            "Paid" => "payment-paid",
+            "Partial" => "payment-partial",
+            "Refunded" => "payment-refunded",
             _ => ""
         };
     }
@@ -397,9 +887,10 @@
     {
         return status switch
         {
-            "Reserved" => "row-reserved",
-            "Checked-in" => "row-checkedin",
+            "Pending" => "row-pending",
+            "Confirmed" => "row-confirmed",
             "Cancelled" => "row-cancelled",
+            "Completed" => "row-completed",
             _ => ""
         };
     }
@@ -413,24 +904,25 @@
         public string Email { get; set; } = string.Empty;
         public DateTime CheckInDate { get; set; } = DateTime.Today;
         public DateTime CheckOutDate { get; set; } = DateTime.Today.AddDays(1);
-        public string Status { get; set; } = "Reserved";
+        public string Status { get; set; } = "Pending";
+        public string PaymentStatus { get; set; } = "Pending";
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public DateTime UpdatedAt { get; set; } = DateTime.Now;
     }
 }
 
 <style>
-    .rooms-container {
-        padding: 2rem 0;
+    .reservations-container {
+        padding: 1rem 0;
     }
 
-    .rooms-header {
+    .reservations-header {
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
     }
 
-    .rooms-title {
+    .reservations-title {
         font-size: 2rem;
         font-weight: 700;
         color: #111827;
@@ -438,13 +930,13 @@
         letter-spacing: -0.02em;
     }
 
-    .rooms-subtitle {
+    .reservations-subtitle {
         font-size: 1rem;
         color: #6b7280;
         margin: 0;
     }
 
-    .rooms-card {
+    .reservations-card {
         background: #ffffff;
         border-radius: 16px;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -452,13 +944,13 @@
         overflow: hidden;
     }
 
-    .rooms-card-header {
-        padding: 1.5rem;
+    .reservations-card-header {
+        padding: 1rem 1.5rem;
         border-bottom: 1px solid #f3f4f6;
         background: #fafafa;
     }
 
-    .rooms-card-title {
+    .reservations-card-title {
         font-size: 1.25rem;
         font-weight: 600;
         color: #111827;
@@ -467,8 +959,8 @@
         align-items: center;
     }
 
-    .rooms-card-body {
-        padding: 1.5rem;
+    .reservations-card-body {
+        padding: 1.25rem;
     }
 
     .form-group {
@@ -495,8 +987,8 @@
     }
 
     .form-control-modern:focus {
-        border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        border-color: #111827;
+        box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.1);
     }
 
     .form-control-modern:disabled {
@@ -543,14 +1035,14 @@
     }
 
     .btn-primary-modern {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: #111827;
         color: #ffffff;
-        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
     }
 
     .btn-primary-modern:hover {
+        background: #1f2937;
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        box-shadow: 0 4px 12px rgba(17, 24, 39, 0.2);
     }
 
     .btn-secondary-modern {
@@ -566,12 +1058,12 @@
 
     .btn-outline-modern {
         background: #ffffff;
-        color: #667eea;
-        border: 2px solid #667eea;
+        color: #111827;
+        border: 2px solid #111827;
     }
 
     .btn-outline-modern:hover {
-        background: #667eea;
+        background: #111827;
         color: #ffffff;
     }
 
@@ -622,6 +1114,16 @@
         border-bottom: 2px solid #e5e7eb;
     }
 
+    .table-modern th.sortable {
+        cursor: pointer;
+        user-select: none;
+        transition: background-color 0.2s ease;
+    }
+
+    .table-modern th.sortable:hover {
+        background: #f3f4f6;
+    }
+
     .table-modern td {
         padding: 1rem;
         border-bottom: 1px solid #f3f4f6;
@@ -637,19 +1139,19 @@
         background: #f9fafb;
     }
 
-    .row-reserved {
-        background: rgba(37, 99, 235, 0.05);
+    .row-pending {
+        background: rgba(251, 191, 36, 0.05);
     }
 
-    .row-reserved:hover {
-        background: rgba(37, 99, 235, 0.1);
+    .row-pending:hover {
+        background: rgba(251, 191, 36, 0.1);
     }
 
-    .row-checkedin {
+    .row-confirmed {
         background: rgba(16, 185, 129, 0.05);
     }
 
-    .row-checkedin:hover {
+    .row-confirmed:hover {
         background: rgba(16, 185, 129, 0.1);
     }
 
@@ -661,6 +1163,14 @@
         background: rgba(239, 68, 68, 0.1);
     }
 
+    .row-completed {
+        background: rgba(59, 130, 246, 0.05);
+    }
+
+    .row-completed:hover {
+        background: rgba(59, 130, 246, 0.1);
+    }
+
     .status-badge {
         display: inline-flex;
         align-items: center;
@@ -670,12 +1180,12 @@
         font-weight: 500;
     }
 
-    .status-reserved {
-        background: #dbeafe;
-        color: #1e40af;
+    .status-pending {
+        background: #fef3c7;
+        color: #92400e;
     }
 
-    .status-checkedin {
+    .status-confirmed {
         background: #d1fae5;
         color: #065f46;
     }
@@ -685,14 +1195,44 @@
         color: #991b1b;
     }
 
-    .status-badge i {
-        font-size: 0.5rem;
+    .status-completed {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    .payment-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-size: 0.8125rem;
+        font-weight: 500;
+    }
+
+    .payment-pending {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .payment-paid {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .payment-partial {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .payment-refunded {
+        background: #fee2e2;
+        color: #991b1b;
     }
 
     .action-buttons {
         display: flex;
         gap: 0.5rem;
         justify-content: center;
+        flex-wrap: wrap;
     }
 
     .btn-action {
@@ -708,6 +1248,16 @@
         font-size: 1rem;
     }
 
+    .btn-view {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    .btn-view:hover {
+        background: #bfdbfe;
+        transform: translateY(-2px);
+    }
+
     .btn-edit {
         background: #e0e7ff;
         color: #4338ca;
@@ -715,6 +1265,26 @@
 
     .btn-edit:hover {
         background: #c7d2fe;
+        transform: translateY(-2px);
+    }
+
+    .btn-approve {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .btn-approve:hover {
+        background: #a7f3d0;
+        transform: translateY(-2px);
+    }
+
+    .btn-cancel {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .btn-cancel:hover {
+        background: #fecaca;
         transform: translateY(-2px);
     }
 
@@ -753,6 +1323,149 @@
         font-size: 0.9375rem;
     }
 
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        padding: 1rem;
+        animation: fadeIn 0.2s ease;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+
+    .modal-container {
+        background: #ffffff;
+        border-radius: 16px;
+        width: 100%;
+        max-width: 600px;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        animation: slideUp 0.3s ease;
+    }
+
+    .modal-container.modal-view {
+        max-width: 700px;
+    }
+
+    @@keyframes slideUp {
+        from {
+            transform: translateY(20px);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    .modal-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid #e5e7eb;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #fafafa;
+        border-radius: 16px 16px 0 0;
+    }
+
+    .modal-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #111827;
+        margin: 0;
+        display: flex;
+        align-items: center;
+    }
+
+    .modal-close {
+        width: 36px;
+        height: 36px;
+        border: none;
+        background: transparent;
+        border-radius: 8px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #6b7280;
+        transition: all 0.2s ease;
+    }
+
+    .modal-close:hover {
+        background: #f3f4f6;
+        color: #111827;
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+    }
+
+    .modal-footer {
+        padding: 1rem 1.5rem;
+        border-top: 1px solid #e5e7eb;
+        display: flex;
+        justify-content: flex-end;
+        background: #fafafa;
+        border-radius: 0 0 16px 16px;
+    }
+
+    .detail-view {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .detail-section {
+        padding: 1rem;
+        background: #f9fafb;
+        border-radius: 12px;
+    }
+
+    .detail-section-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #111827;
+        margin-bottom: 1rem;
+    }
+
+    .detail-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+
+    .detail-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .detail-label {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #6b7280;
+    }
+
+    .detail-value {
+        font-size: 0.9375rem;
+        color: #111827;
+    }
+
     @@media (max-width: 1200px) {
         .table-modern {
             font-size: 0.875rem;
@@ -765,7 +1478,7 @@
     }
 
     @@media (max-width: 992px) {
-        .rooms-container {
+        .reservations-container {
             padding: 1.5rem 0;
         }
 
@@ -774,16 +1487,25 @@
         }
 
         .table-modern {
-            min-width: 1000px;
+            min-width: 1200px;
         }
     }
 
     @@media (max-width: 768px) {
-        .rooms-title {
+        .reservations-title {
             font-size: 1.75rem;
         }
 
-        .rooms-card-body {
+        .reservations-header {
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .reservations-header .btn-modern {
+            width: 100%;
+        }
+
+        .reservations-card-body {
             padding: 1rem;
         }
 
@@ -794,19 +1516,33 @@
         .btn-modern {
             width: 100%;
         }
+
+        .modal-container {
+            max-width: 100%;
+            margin: 1rem;
+        }
+
+        .detail-grid {
+            grid-template-columns: 1fr;
+        }
     }
 
     @@media (max-width: 480px) {
-        .rooms-container {
+        .reservations-container {
             padding: 1rem 0;
         }
 
-        .rooms-title {
+        .reservations-title {
             font-size: 1.5rem;
         }
 
-        .rooms-card-header,
-        .rooms-card-body {
+        .reservations-card-header,
+        .reservations-card-body {
+            padding: 1rem;
+        }
+
+        .modal-header,
+        .modal-body {
             padding: 1rem;
         }
     }
