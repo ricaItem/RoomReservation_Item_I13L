@@ -1,4 +1,7 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using RoomReservation_Item_I13L.Data;
+using RoomReservation_Item_I13L.Data.Services;
 
 namespace RoomReservation_Item_I13L
 {
@@ -15,6 +18,15 @@ namespace RoomReservation_Item_I13L
                 });
 
             builder.Services.AddMauiBlazorWebView();
+
+            var connectionString = "Data Source=DESKTOP-CUTKD51;Initial Catalog=DB_RoomReservation;Integrated Security=True;Trust Server Certificate=True";
+            
+            builder.Services.AddDbContext<AppDbContext>(options =>
+                options.UseSqlServer(connectionString));
+
+            builder.Services.AddScoped<RoomService>();
+            builder.Services.AddScoped<ReservationService>();
+            builder.Services.AddScoped<UserService>();
 
 #if DEBUG
     		builder.Services.AddBlazorWebViewDeveloperTools();

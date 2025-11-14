@@ -1,4 +1,7 @@
 @page "/login"
+@using RoomReservation_Item_I13L.Data.Services
+@inject UserService UserService
+@inject NavigationManager NavigationManager
 
 <div class="login-page">
     <div class="login-container">
@@ -33,6 +36,12 @@
                 </div>
 
                 <EditForm Model="@loginModel" OnValidSubmit="HandleLogin">
+                    @if (isLoading)
+                    {
+                        <div class="loading-overlay">
+                            <div class="spinner"></div>
+                        </div>
+                    }
                     <DataAnnotationsValidator />
                     <ValidationSummary class="validation-summary" />
 
@@ -93,7 +102,7 @@
                 </div>
 
                 <div class="login-footer">
-                    <p>Don't have an account? <a href="#" class="signup-link">Sign up</a></p>
+                    @* <p>Don't have an account? <a href="#" class="signup-link">Sign up</a></p> *@
                 </div>
             </div>
         </div>
@@ -103,18 +112,35 @@
 @code {
     private LoginModel loginModel = new();
     private string? errorMessage;
+    private bool isLoading = false;
 
-    [Inject] NavigationManager NavigationManager { get; set; } = default!;
-
-    private void HandleLogin()
+    private async Task HandleLogin()
     {
-        if (loginModel.Email == "admin@example.com" && loginModel.Password == "1234")
+        try
         {
-            NavigationManager.NavigateTo("/dashboard");
+            isLoading = true;
+            errorMessage = null;
+
+            var user = await UserService.ValidateUserAsync(loginModel.Email, loginModel.Password);
+            
+            if (user != null)
+            {
+                NavigationManager.NavigateTo("/dashboard");
+            }
+            else
+            {
+                errorMessage = "Invalid email or password.";
+            }
         }
-        else
+        catch (Exception ex)
         {
-            errorMessage = "Invalid email or password.";
+            errorMessage = "An error occurred during login. Please try again.";
+            Console.WriteLine($"Login error: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
         }
     }
 

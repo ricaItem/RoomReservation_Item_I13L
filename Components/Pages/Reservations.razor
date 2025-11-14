@@ -1,4 +1,8 @@
 @page "/reservations"
+@using RoomReservation_Item_I13L.Data.Entities
+@using RoomReservation_Item_I13L.Data.Services
+@inject ReservationService ReservationService
+@inject RoomService RoomService
 
 <div class="reservations-container">
     <div class="reservations-header mb-4">
@@ -29,7 +33,7 @@
                         </label>
                         <div class="search-wrapper">
                             <i class="bi bi-search search-icon"></i>
-                            <InputText class="form-control-modern search-input" @bind-Value="searchQuery" @oninput="FilterReservations" placeholder="Search by customer name, room..." />
+                            <InputText class="form-control-modern search-input" @bind-Value="searchQuery" @oninput="async () => await FilterReservationsAsync()" placeholder="Search by customer name, room..." />
         </div>
         </div>
         </div>
@@ -39,12 +43,13 @@
                             <i class="bi bi-funnel me-2"></i>
                             Status
                         </label>
-                        <InputSelect class="form-control-modern" @bind-Value="statusFilter" @onchange="FilterReservations">
+                        <InputSelect class="form-control-modern" @bind-Value="statusFilter" @onchange="async () => await FilterReservationsAsync()">
                             <option value="">All Status</option>
                             <option value="Pending">Pending</option>
                             <option value="Confirmed">Confirmed</option>
                             <option value="Cancelled">Cancelled</option>
                             <option value="Completed">Completed</option>
+                            <option value="Archived">Archived</option>
                         </InputSelect>
                     </div>
                 </div>
@@ -54,7 +59,7 @@
                             <i class="bi bi-calendar me-2"></i>
                             Start Date
                         </label>
-                        <InputDate class="form-control-modern" @bind-Value="startDateFilter" @onchange="FilterReservations" />
+                        <InputDate class="form-control-modern" @bind-Value="startDateFilter" @onchange="async () => await FilterReservationsAsync()" />
                     </div>
                 </div>
                 <div class="col-lg-2 col-md-6">
@@ -63,7 +68,7 @@
                             <i class="bi bi-calendar me-2"></i>
                             End Date
                         </label>
-                        <InputDate class="form-control-modern" @bind-Value="endDateFilter" @onchange="FilterReservations" />
+                        <InputDate class="form-control-modern" @bind-Value="endDateFilter" @onchange="async () => await FilterReservationsAsync()" />
                     </div>
                 </div>
                 <div class="col-lg-2 col-md-6">
@@ -72,22 +77,19 @@
                             <i class="bi bi-door-closed me-2"></i>
                             Room Type
                         </label>
-                        <InputSelect class="form-control-modern" @bind-Value="roomTypeFilter" @onchange="FilterReservations">
+                        <InputSelect class="form-control-modern" @bind-Value="roomTypeFilter" @onchange="async () => await FilterReservationsAsync()">
                             <option value="">All Types</option>
-                            <option value="Conference Room">Conference Room</option>
-                            <option value="Meeting Room">Meeting Room</option>
-                            <option value="Training Room">Training Room</option>
-                            <option value="Event Hall">Event Hall</option>
-                            <option value="Workspace">Workspace</option>
-                            <option value="Lounge">Lounge</option>
-                            <option value="Office">Office</option>
+                            @foreach (var roomType in roomTypes)
+                            {
+                                <option value="@roomType">@roomType</option>
+                            }
                         </InputSelect>
                     </div>
                 </div>
                 <div class="col-lg-1 col-md-6">
                     <div class="form-group">
                         <label class="form-label">&nbsp;</label>
-                        <button class="btn-modern btn-clear w-100" type="button" @onclick="ClearFilters" title="Clear Filters">
+                        <button class="btn-modern btn-clear w-100" type="button" @onclick="async () => await ClearFiltersAsync()" title="Clear Filters">
                             <i class="bi bi-x-circle me-1"></i>
                             Clear
                         </button>
@@ -210,6 +212,9 @@
                                             <button class="btn-action btn-edit" @onclick="() => OpenEditModal(reservation)" title="Edit">
                                                 <i class="bi bi-pencil"></i>
                                             </button>
+                                            <button class="btn-action btn-archive" @onclick="() => ConfirmArchiveReservation(reservation)" title="Archive">
+                                                <i class="bi bi-archive"></i>
+                                            </button>
                                             <button class="btn-action btn-delete" @onclick="() => ConfirmDeleteReservation(reservation)" title="Delete">
                                                 <i class="bi bi-trash"></i>
                                             </button>
@@ -239,7 +244,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <EditForm Model="@reservationModel" OnValidSubmit="SaveReservation">
+                <EditForm Model="@reservationModel">
                     <DataAnnotationsValidator />
                     <ValidationSummary class="validation-summary" />
 
@@ -252,9 +257,9 @@
                                 </label>
                                 <InputSelect class="form-control-modern" @bind-Value="reservationModel.RoomName">
                                     <option value="">Select room</option>
-                                    @foreach (var room in availableRooms)
+                                    @foreach (var room in allRooms.Where(r => r.Status == "Available"))
                                     {
-                                        <option value="@room">@room</option>
+                                        <option value="@room.RoomName">@room.RoomName</option>
                                     }
                                 </InputSelect>
                             </div>
@@ -373,7 +378,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <EditForm Model="@reservationModel" OnValidSubmit="UpdateReservation">
+                <EditForm Model="@reservationModel">
                     <DataAnnotationsValidator />
                     <ValidationSummary class="validation-summary" />
 
@@ -396,9 +401,9 @@
                                 </label>
                                 <InputSelect class="form-control-modern" @bind-Value="reservationModel.RoomName">
                                     <option value="">Select room</option>
-                                    @foreach (var room in availableRooms)
+                                    @foreach (var room in allRooms.Where(r => r.Status == "Available"))
                                     {
-                                        <option value="@room">@room</option>
+                                        <option value="@room.RoomName">@room.RoomName</option>
                                     }
                                 </InputSelect>
                             </div>
@@ -633,7 +638,7 @@
                     <i class="bi bi-x-circle me-2"></i>
                     Cancel
                 </button>
-                <button class="btn-modern @(IsDestructiveAction() ? "btn-confirm-destructive" : "btn-confirm")" @onclick="ExecuteConfirmedAction">
+                <button class="btn-modern @(IsDestructiveAction() ? "btn-confirm-destructive" : "btn-confirm")" @onclick="async () => await ExecuteConfirmedActionAsync()">
                     <i class="bi bi-check-circle me-2"></i>
                     Confirm
                 </button>
@@ -643,10 +648,12 @@
 }
 
 @code {
-    private ReservationModel reservationModel = new();
-    private List<ReservationModel> reservationList = new();
-    private List<ReservationModel> filteredReservationList = new();
+    private Reservation reservationModel = new();
+    private List<Reservation> reservationList = new();
+    private List<Reservation> filteredReservationList = new();
     private List<string> availableRooms = new();
+    private List<string> roomTypes = new();
+    private List<Room> allRooms = new();
     private string searchQuery = string.Empty;
     private string statusFilter = string.Empty;
     private DateTime? startDateFilter;
@@ -655,77 +662,115 @@
     private bool showAddModal = false;
     private bool showEditModal = false;
     private bool showViewModal = false;
-    private ReservationModel? selectedReservation;
+    private Reservation? selectedReservation;
     private string sortColumn = "Id";
     private string sortDirection = "asc";
-    private int nextId = 1;
     private bool showConfirmDialog = false;
     private string confirmAction = string.Empty;
     private string confirmMessage = string.Empty;
-    private ReservationModel? reservationToDelete;
+    private Reservation? reservationToDelete;
+    private bool isLoading = false;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        availableRooms = new List<string>
-        {
-            "Conference Room A",
-            "Conference Room B",
-            "Meeting Room 101",
-            "Meeting Room 102",
-            "Training Room 1",
-            "Training Room 2",
-            "Event Hall",
-            "Workspace Alpha",
-            "Lounge Area"
-        };
-        filteredReservationList = reservationList;
+        await LoadDataAsync();
     }
 
-    private void OpenAddModal()
+    private async Task LoadDataAsync()
     {
-        reservationModel = new ReservationModel
+        try
+        {
+            isLoading = true;
+            reservationList = await ReservationService.GetAllReservationsAsync();
+            filteredReservationList = reservationList;
+            allRooms = await RoomService.GetAllRoomsAsync();
+            availableRooms = allRooms.Where(r => r.Status == "Available").Select(r => r.RoomName).ToList();
+            roomTypes = await ReservationService.GetDistinctRoomTypesAsync();
+            ApplySorting();
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading data: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task OpenAddModalAsync()
+    {
+        reservationModel = new Reservation
         {
             CheckInDate = DateTime.Today,
             CheckOutDate = DateTime.Today.AddDays(1),
             Status = "Pending",
             PaymentStatus = "Pending"
         };
+        allRooms = await RoomService.GetAllRoomsAsync();
         showAddModal = true;
+    }
+
+
+    private void OpenAddModal()
+    {
+        _ = OpenAddModalAsync();
     }
 
     private void CloseAddModal()
     {
         showAddModal = false;
-        reservationModel = new ReservationModel();
+        reservationModel = new Reservation();
     }
 
-
-    private void OpenEditModal(ReservationModel reservation)
+    private async Task OpenEditModalAsync(Reservation reservation)
     {
-        reservationModel = new ReservationModel
+        try
         {
-            Id = reservation.Id,
-            RoomName = reservation.RoomName,
-            CustomerName = reservation.CustomerName,
-            ContactNumber = reservation.ContactNumber,
-            Email = reservation.Email,
-            CheckInDate = reservation.CheckInDate,
-            CheckOutDate = reservation.CheckOutDate,
-            Status = reservation.Status,
-            PaymentStatus = reservation.PaymentStatus,
-            CreatedAt = reservation.CreatedAt,
-            UpdatedAt = reservation.UpdatedAt
-        };
-        showEditModal = true;
+            var reservationFromDb = await ReservationService.GetReservationByIdAsync(reservation.Id);
+            if (reservationFromDb == null)
+            {
+                Console.WriteLine($"Reservation with Id {reservation.Id} not found.");
+                return;
+            }
+
+            reservationModel = new Reservation
+            {
+                Id = reservationFromDb.Id,
+                RoomName = reservationFromDb.RoomName,
+                CustomerName = reservationFromDb.CustomerName,
+                ContactNumber = reservationFromDb.ContactNumber,
+                Email = reservationFromDb.Email,
+                CheckInDate = reservationFromDb.CheckInDate,
+                CheckOutDate = reservationFromDb.CheckOutDate,
+                Status = reservationFromDb.Status,
+                PaymentStatus = reservationFromDb.PaymentStatus,
+                CreatedAt = reservationFromDb.CreatedAt,
+                UpdatedAt = reservationFromDb.UpdatedAt
+            };
+            allRooms = await RoomService.GetAllRoomsAsync();
+            showEditModal = true;
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error opening edit modal: {ex.Message}");
+        }
+    }
+
+    private void OpenEditModal(Reservation reservation)
+    {
+        _ = OpenEditModalAsync(reservation);
     }
 
     private void CloseEditModal()
     {
         showEditModal = false;
-        reservationModel = new ReservationModel();
+        reservationModel = new Reservation();
     }
 
-    private void OpenViewModal(ReservationModel reservation)
+    private void OpenViewModal(Reservation reservation)
     {
         selectedReservation = reservation;
         showViewModal = true;
@@ -739,7 +784,7 @@
 
     private void ConfirmAddReservation()
     {
-        if (string.IsNullOrEmpty(reservationModel.RoomName) || string.IsNullOrEmpty(reservationModel.CustomerName))
+        if (string.IsNullOrWhiteSpace(reservationModel.RoomName) || string.IsNullOrWhiteSpace(reservationModel.CustomerName))
         {
             return;
         }
@@ -748,41 +793,49 @@
         showConfirmDialog = true;
     }
 
-    private void SaveReservation()
+    private async Task SaveReservationAsync()
     {
-        reservationModel.Id = nextId++;
-        reservationModel.CreatedAt = DateTime.Now;
-        reservationModel.UpdatedAt = DateTime.Now;
-        if (string.IsNullOrEmpty(reservationModel.Status))
+        try
         {
-            reservationModel.Status = "Pending";
-        }
-        if (string.IsNullOrEmpty(reservationModel.PaymentStatus))
-        {
-            reservationModel.PaymentStatus = "Pending";
-        }
-        reservationList.Add(new ReservationModel
-        {
-            Id = reservationModel.Id,
-            RoomName = reservationModel.RoomName,
-            CustomerName = reservationModel.CustomerName,
-            ContactNumber = reservationModel.ContactNumber,
-            Email = reservationModel.Email,
-            CheckInDate = reservationModel.CheckInDate,
-            CheckOutDate = reservationModel.CheckOutDate,
-            Status = reservationModel.Status,
-            PaymentStatus = reservationModel.PaymentStatus,
-            CreatedAt = reservationModel.CreatedAt,
-            UpdatedAt = reservationModel.UpdatedAt
-        });
+            if (string.IsNullOrWhiteSpace(reservationModel.RoomName) || string.IsNullOrWhiteSpace(reservationModel.CustomerName))
+            {
+                Console.WriteLine("Validation failed: Room name and customer name are required.");
+                return;
+            }
 
-        CloseAddModal();
-        FilterReservations();
+            if (reservationModel.CheckOutDate <= reservationModel.CheckInDate)
+            {
+                Console.WriteLine("Validation failed: Check-out date must be after check-in date.");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(reservationModel.Status))
+            {
+                reservationModel.Status = "Pending";
+            }
+            if (string.IsNullOrWhiteSpace(reservationModel.PaymentStatus))
+            {
+                reservationModel.PaymentStatus = "Pending";
+            }
+
+            var newReservation = await ReservationService.AddReservationAsync(reservationModel);
+            if (newReservation != null)
+            {
+                CloseAddModal();
+                await LoadDataAsync();
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error saving reservation: {ex.Message}");
+            StateHasChanged();
+        }
     }
 
     private void ConfirmUpdateReservation()
     {
-        if (string.IsNullOrEmpty(reservationModel.RoomName) || string.IsNullOrEmpty(reservationModel.CustomerName))
+        if (string.IsNullOrWhiteSpace(reservationModel.RoomName) || string.IsNullOrWhiteSpace(reservationModel.CustomerName))
         {
             return;
         }
@@ -791,71 +844,131 @@
         showConfirmDialog = true;
     }
 
-    private void UpdateReservation()
+    private async Task UpdateReservationAsync()
     {
-        var existing = reservationList.FirstOrDefault(r => r.Id == reservationModel.Id);
-        if (existing != null)
+        try
         {
-            existing.RoomName = reservationModel.RoomName;
-            existing.CustomerName = reservationModel.CustomerName;
-            existing.ContactNumber = reservationModel.ContactNumber;
-            existing.Email = reservationModel.Email;
-            existing.CheckInDate = reservationModel.CheckInDate;
-            existing.CheckOutDate = reservationModel.CheckOutDate;
-            existing.Status = reservationModel.Status;
-            existing.PaymentStatus = reservationModel.PaymentStatus;
-            existing.UpdatedAt = DateTime.Now;
+            if (string.IsNullOrWhiteSpace(reservationModel.RoomName) || string.IsNullOrWhiteSpace(reservationModel.CustomerName))
+            {
+                Console.WriteLine("Validation failed: Room name and customer name are required.");
+                return;
+            }
+
+            if (reservationModel.CheckOutDate <= reservationModel.CheckInDate)
+            {
+                Console.WriteLine("Validation failed: Check-out date must be after check-in date.");
+                return;
+            }
+
+            await ReservationService.UpdateReservationAsync(reservationModel);
+            CloseEditModal();
+            await LoadDataAsync();
+            StateHasChanged();
         }
-
-        CloseEditModal();
-        FilterReservations();
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error updating reservation: {ex.Message}");
+            StateHasChanged();
+        }
     }
 
-    private void ApproveReservation(ReservationModel reservation)
+    private async Task ApproveReservationAsync(Reservation reservation)
     {
-        reservation.Status = "Confirmed";
-        reservation.UpdatedAt = DateTime.Now;
-        FilterReservations();
+        try
+        {
+            reservation.Status = "Confirmed";
+            await ReservationService.UpdateReservationAsync(reservation);
+            await LoadDataAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error approving reservation: {ex.Message}");
+        }
     }
 
-    private void CancelReservation(ReservationModel reservation)
+    private async Task CancelReservationAsync(Reservation reservation)
     {
-        reservation.Status = "Cancelled";
-        reservation.UpdatedAt = DateTime.Now;
-        FilterReservations();
+        try
+        {
+            reservation.Status = "Cancelled";
+            await ReservationService.UpdateReservationAsync(reservation);
+            await LoadDataAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error cancelling reservation: {ex.Message}");
+        }
     }
 
-    private void ConfirmDeleteReservation(ReservationModel reservation)
+    private void ConfirmArchiveReservation(Reservation reservation)
     {
         reservationToDelete = reservation;
-        confirmAction = "delete";
-        confirmMessage = $"Are you sure you want to delete reservation #{reservation.Id} for {reservation.CustomerName}? This action cannot be undone.";
+        confirmAction = "archive";
+        confirmMessage = $"Are you sure you want to archive reservation #{reservation.Id} for {reservation.CustomerName}? This will set the status to 'Archived'.";
         showConfirmDialog = true;
     }
 
-    private void DeleteReservation(ReservationModel reservation)
+    private async Task ArchiveReservationAsync()
     {
-        reservationList.Remove(reservation);
-        FilterReservations();
+        if (reservationToDelete != null)
+        {
+            try
+            {
+                await ReservationService.ArchiveReservationAsync(reservationToDelete.Id);
+                reservationToDelete = null;
+                await LoadDataAsync();
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error archiving reservation: {ex.Message}");
+            }
+        }
     }
 
-    private void ExecuteConfirmedAction()
+    private void ConfirmDeleteReservation(Reservation reservation)
+    {
+        reservationToDelete = reservation;
+        confirmAction = "delete";
+        confirmMessage = $"Are you sure you want to permanently delete reservation #{reservation.Id} for {reservation.CustomerName}? This action cannot be undone and will remove the record from the database.";
+        showConfirmDialog = true;
+    }
+
+    private async Task DeleteReservationAsync()
+    {
+        if (reservationToDelete != null)
+        {
+            try
+            {
+                await ReservationService.DeleteReservationAsync(reservationToDelete.Id);
+                reservationToDelete = null;
+                await LoadDataAsync();
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error deleting reservation: {ex.Message}");
+                StateHasChanged();
+            }
+        }
+    }
+
+    private async Task ExecuteConfirmedActionAsync()
     {
         showConfirmDialog = false;
         switch (confirmAction)
         {
             case "add":
-                SaveReservation();
+                await SaveReservationAsync();
                 break;
             case "update":
-                UpdateReservation();
+                await UpdateReservationAsync();
+                break;
+            case "archive":
+                await ArchiveReservationAsync();
                 break;
             case "delete":
-                if (reservationToDelete != null)
-                {
-                    DeleteReservation(reservationToDelete);
-                    reservationToDelete = null;
-                }
+                await DeleteReservationAsync();
                 break;
         }
         confirmAction = string.Empty;
@@ -919,31 +1032,35 @@
         };
     }
 
-    private void FilterReservations()
+    private async Task FilterReservationsAsync()
     {
-        filteredReservationList = reservationList.Where(res =>
-            (string.IsNullOrEmpty(searchQuery) ||
-             res.CustomerName.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
-             res.RoomName.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
-             res.Status.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
-             res.PaymentStatus.Contains(searchQuery, StringComparison.OrdinalIgnoreCase)) &&
-            (string.IsNullOrEmpty(statusFilter) || res.Status == statusFilter) &&
-            (!startDateFilter.HasValue || res.CheckInDate >= startDateFilter.Value.Date) &&
-            (!endDateFilter.HasValue || res.CheckOutDate <= endDateFilter.Value.Date) &&
-            (string.IsNullOrEmpty(roomTypeFilter) || res.RoomName.Contains(roomTypeFilter, StringComparison.OrdinalIgnoreCase))
-        ).ToList();
+        try
+        {
+            filteredReservationList = await ReservationService.FilterReservationsAsync(
+                searchQuery,
+                statusFilter,
+                startDateFilter,
+                endDateFilter,
+                roomTypeFilter
+            );
 
-        ApplySorting();
+            ApplySorting();
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error filtering reservations: {ex.Message}");
+        }
     }
 
-    private void ClearFilters()
+    private async Task ClearFiltersAsync()
     {
         searchQuery = string.Empty;
         statusFilter = string.Empty;
         startDateFilter = null;
         endDateFilter = null;
         roomTypeFilter = string.Empty;
-        FilterReservations();
+        await FilterReservationsAsync();
     }
 
     private string GetStatusBadgeClass(string status)
@@ -982,20 +1099,6 @@
         };
     }
 
-    public class ReservationModel
-    {
-        public int Id { get; set; }
-        public string RoomName { get; set; } = string.Empty;
-        public string CustomerName { get; set; } = string.Empty;
-        public string ContactNumber { get; set; } = string.Empty;
-        public string Email { get; set; } = string.Empty;
-        public DateTime CheckInDate { get; set; } = DateTime.Today;
-        public DateTime CheckOutDate { get; set; } = DateTime.Today.AddDays(1);
-        public string Status { get; set; } = "Pending";
-        public string PaymentStatus { get; set; } = "Pending";
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
-        public DateTime UpdatedAt { get; set; } = DateTime.Now;
-    }
 }
 
 <style>
@@ -1422,6 +1525,18 @@
     }
 
     .btn-edit:hover {
+        background: #fde68a;
+        color: #b45309;
+        box-shadow: 0 4px 8px rgba(217, 119, 6, 0.2);
+        transform: translateY(-2px);
+    }
+
+    .btn-archive {
+        background: #fef3c7;
+        color: #d97706;
+    }
+
+    .btn-archive:hover {
         background: #fde68a;
         color: #b45309;
         box-shadow: 0 4px 8px rgba(217, 119, 6, 0.2);

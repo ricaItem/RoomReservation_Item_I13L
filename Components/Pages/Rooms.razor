@@ -1,4 +1,7 @@
 @page "/rooms"
+@using RoomReservation_Item_I13L.Data.Entities
+@using RoomReservation_Item_I13L.Data.Services
+@inject RoomService RoomService
 
 <div class="rooms-container">
     <div class="rooms-header mb-4">
@@ -23,35 +26,39 @@
                         </label>
                         <div class="search-wrapper">
                             <i class="bi bi-search search-icon"></i>
-                            <InputText class="form-control-modern search-input" @bind-Value="searchQuery" @oninput="FilterRooms" placeholder="Search by room name or type..." />
+                            <InputText class="form-control-modern search-input"
+                                       @bind-Value="searchQuery"
+                                       @oninput="async () => await FilterRoomsAsync()"
+                                       placeholder="Search by room name or type..." />
                         </div>
                     </div>
-            </div>
-            <div class="col-md-4">
+                </div>
+                <div class="col-md-4">
                     <div class="form-group">
                         <label class="form-label">
                             <i class="bi bi-funnel me-2"></i>
                             Filter by Status
                         </label>
-                        <InputSelect class="form-control-modern" @bind-Value="statusFilter" @onchange="FilterRooms">
+                        <InputSelect class="form-control-modern" @bind-Value="statusFilter" @onchange="async () => await FilterRoomsAsync()">
                             <option value="">All Status</option>
                             <option value="Available">Available</option>
                             <option value="Not Available">Not Available</option>
+                            <option value="Archived">Archived</option>
                         </InputSelect>
                     </div>
                 </div>
                 <div class="col-md-2">
                     <div class="form-group">
                         <label class="form-label">&nbsp;</label>
-                        <button class="btn-modern btn-clear w-100" type="button" @onclick="ClearFilters" title="Clear Filters">
+                        <button class="btn-modern btn-clear w-100" type="button" @onclick="async () => await ClearFiltersAsync()" title="Clear Filters">
                             <i class="bi bi-x-circle me-2"></i>
                             Clear
                         </button>
                     </div>
-            </div>
-            </div>
+                </div>
             </div>
         </div>
+    </div>
 
     <div class="rooms-card">
         <div class="rooms-card-header">
@@ -70,7 +77,7 @@
                     <i class="bi bi-inbox"></i>
                     <h4>No rooms found</h4>
                     <p>@(roomList.Count == 0 ? "Get started by adding your first room." : "Try adjusting your search or filter criteria.")</p>
-</div>
+                </div>
             }
             else
             {
@@ -80,34 +87,30 @@
                             <tr>
                                 <th>Room ID</th>
                                 <th>Name</th>
-                <th>Type</th>
-                <th>Capacity</th>
+                                <th>Type</th>
+                                <th>Capacity</th>
                                 <th>Status</th>
                                 <th>Description</th>
                                 <th>Created At</th>
                                 <th>Updated At</th>
                                 <th class="text-center">Actions</th>
-            </tr>
-        </thead>
-        <tbody>
+                            </tr>
+                        </thead>
+                        <tbody>
                             @foreach (var room in filteredRoomList)
-            {
-                <tr>
+                            {
+                                <tr>
                                     <td><strong>#@room.Id</strong></td>
                                     <td>@room.RoomName</td>
-                                    <td>
-                                        <span class="badge-type">@room.RoomType</span>
-                                    </td>
+                                    <td><span class="badge-type">@room.RoomType</span></td>
                                     <td>
                                         <span class="capacity-badge">
-                                            <i class="bi bi-people me-1"></i>
-                                            @room.Capacity
+                                            <i class="bi bi-people me-1"></i>@room.Capacity
                                         </span>
                                     </td>
                                     <td>
                                         <span class="status-badge @(room.Status == "Available" ? "status-available" : "status-unavailable")">
-                                            <i class="bi bi-circle-fill me-1"></i>
-                                            @room.Status
+                                            <i class="bi bi-circle-fill me-1"></i>@room.Status
                                         </span>
                                     </td>
                                     <td>
@@ -125,16 +128,19 @@
                                             <button class="btn-action btn-edit" @onclick="() => OpenEditModal(room)" title="Edit">
                                                 <i class="bi bi-pencil"></i>
                                             </button>
-                                            <button class="btn-action btn-delete" @onclick="() => ConfirmArchiveRoom(room)" title="Delete">
+                                            <button class="btn-action btn-archive" @onclick="() => ConfirmArchiveRoom(room)" title="Archive">
+                                                <i class="bi bi-archive"></i>
+                                            </button>
+                                            <button class="btn-action btn-delete" @onclick="() => ConfirmDeleteRoom(room)" title="Delete">
                                                 <i class="bi bi-trash"></i>
                                             </button>
                                         </div>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-</div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
             }
         </div>
     </div>
@@ -146,15 +152,14 @@
         <div class="modal-container" @onclick:stopPropagation="true">
             <div class="modal-header">
                 <h3 class="modal-title">
-                    <i class="bi bi-plus-circle me-2"></i>
-                    Add New Room
+                    <i class="bi bi-plus-circle me-2"></i>Add New Room
                 </h3>
                 <button class="modal-close" @onclick="CloseAddModal">
                     <i class="bi bi-x-lg"></i>
                 </button>
             </div>
             <div class="modal-body">
-                <EditForm Model="@roomModel" OnValidSubmit="SaveRoom">
+                <EditForm Model="@roomModel">
                     <DataAnnotationsValidator />
                     <ValidationSummary class="validation-summary" />
 
@@ -162,8 +167,7 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label class="form-label">
-                                    <i class="bi bi-door-closed me-2"></i>
-                                    Room Name <span class="text-danger">*</span>
+                                    <i class="bi bi-door-closed me-2"></i>Room Name <span class="text-danger">*</span>
                                 </label>
                                 <InputText class="form-control-modern" @bind-Value="roomModel.RoomName" placeholder="Enter room name" />
                             </div>
@@ -172,8 +176,7 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label class="form-label">
-                                    <i class="bi bi-tags me-2"></i>
-                                    Room Type <span class="text-danger">*</span>
+                                    <i class="bi bi-tags me-2"></i>Room Type <span class="text-danger">*</span>
                                 </label>
                                 <InputSelect class="form-control-modern" @bind-Value="roomModel.RoomType">
                                     <option value="">Select room type</option>
@@ -191,8 +194,7 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label class="form-label">
-                                    <i class="bi bi-people me-2"></i>
-                                    Capacity <span class="text-danger">*</span>
+                                    <i class="bi bi-people me-2"></i>Capacity <span class="text-danger">*</span>
                                 </label>
                                 <InputNumber class="form-control-modern" @bind-Value="roomModel.Capacity" placeholder="Enter capacity" />
                             </div>
@@ -201,8 +203,7 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label class="form-label">
-                                    <i class="bi bi-circle-fill me-2"></i>
-                                    Status <span class="text-danger">*</span>
+                                    <i class="bi bi-circle-fill me-2"></i>Status <span class="text-danger">*</span>
                                 </label>
                                 <InputSelect class="form-control-modern" @bind-Value="roomModel.Status">
                                     <option value="">Select status</option>
@@ -214,10 +215,7 @@
 
                         <div class="col-12">
                             <div class="form-group">
-                                <label class="form-label">
-                                    <i class="bi bi-file-text me-2"></i>
-                                    Description
-                                </label>
+                                <label class="form-label"><i class="bi bi-file-text me-2"></i>Description</label>
                                 <InputTextArea class="form-control-modern" @bind-Value="roomModel.Description" rows="3" placeholder="Enter room description (optional)" />
                             </div>
                         </div>
@@ -225,12 +223,10 @@
 
                     <div class="form-actions mt-4">
                         <button class="btn-modern btn-cancel" type="button" @onclick="CloseAddModal">
-                            <i class="bi bi-x-circle me-2"></i>
-                            Cancel
+                            <i class="bi bi-x-circle me-2"></i>Cancel
                         </button>
                         <button class="btn-modern btn-confirm" type="button" @onclick="ConfirmAddRoom">
-                            <i class="bi bi-plus-circle me-2"></i>
-                            Add Room
+                            <i class="bi bi-plus-circle me-2"></i>Add Room
                         </button>
                     </div>
                 </EditForm>
@@ -245,15 +241,14 @@
         <div class="modal-container" @onclick:stopPropagation="true">
             <div class="modal-header">
                 <h3 class="modal-title">
-                    <i class="bi bi-pencil-square me-2"></i>
-                    Edit Room
+                    <i class="bi bi-pencil-square me-2"></i>Edit Room
                 </h3>
                 <button class="modal-close" @onclick="CloseEditModal">
                     <i class="bi bi-x-lg"></i>
                 </button>
             </div>
             <div class="modal-body">
-                <EditForm Model="@roomModel" OnValidSubmit="UpdateRoom">
+                <EditForm Model="@roomModel">
                     <DataAnnotationsValidator />
                     <ValidationSummary class="validation-summary" />
 
@@ -261,8 +256,7 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label class="form-label">
-                                    <i class="bi bi-door-closed me-2"></i>
-                                    Room Name <span class="text-danger">*</span>
+                                    <i class="bi bi-door-closed me-2"></i>Room Name <span class="text-danger">*</span>
                                 </label>
                                 <InputText class="form-control-modern" @bind-Value="roomModel.RoomName" placeholder="Enter room name" />
                             </div>
@@ -271,8 +265,7 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label class="form-label">
-                                    <i class="bi bi-tags me-2"></i>
-                                    Room Type <span class="text-danger">*</span>
+                                    <i class="bi bi-tags me-2"></i>Room Type <span class="text-danger">*</span>
                                 </label>
                                 <InputSelect class="form-control-modern" @bind-Value="roomModel.RoomType">
                                     <option value="">Select room type</option>
@@ -290,8 +283,7 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label class="form-label">
-                                    <i class="bi bi-people me-2"></i>
-                                    Capacity <span class="text-danger">*</span>
+                                    <i class="bi bi-people me-2"></i>Capacity <span class="text-danger">*</span>
                                 </label>
                                 <InputNumber class="form-control-modern" @bind-Value="roomModel.Capacity" placeholder="Enter capacity" />
                             </div>
@@ -300,33 +292,27 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label class="form-label">
-                                    <i class="bi bi-circle-fill me-2"></i>
-                                    Status <span class="text-danger">*</span>
+                                    <i class="bi bi-circle-fill me-2"></i>Status <span class="text-danger">*</span>
                                 </label>
                                 <InputSelect class="form-control-modern" @bind-Value="roomModel.Status">
                                     <option value="">Select status</option>
                                     <option value="Available">Available</option>
                                     <option value="Not Available">Not Available</option>
+                                    <option value="Archived">Archived</option>
                                 </InputSelect>
                             </div>
                         </div>
 
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label class="form-label">
-                                    <i class="bi bi-hash me-2"></i>
-                                    Room ID
-                                </label>
+                                <label class="form-label"><i class="bi bi-hash me-2"></i>Room ID</label>
                                 <InputNumber class="form-control-modern" @bind-Value="roomModel.Id" disabled />
                             </div>
                         </div>
 
                         <div class="col-12">
                             <div class="form-group">
-                                <label class="form-label">
-                                    <i class="bi bi-file-text me-2"></i>
-                                    Description
-                                </label>
+                                <label class="form-label"><i class="bi bi-file-text me-2"></i>Description</label>
                                 <InputTextArea class="form-control-modern" @bind-Value="roomModel.Description" rows="3" placeholder="Enter room description (optional)" />
                             </div>
                         </div>
@@ -334,12 +320,10 @@
 
                     <div class="form-actions mt-4">
                         <button class="btn-modern btn-cancel" type="button" @onclick="CloseEditModal">
-                            <i class="bi bi-x-circle me-2"></i>
-                            Cancel
+                            <i class="bi bi-x-circle me-2"></i>Cancel
                         </button>
                         <button class="btn-modern btn-confirm" type="button" @onclick="ConfirmUpdateRoom">
-                            <i class="bi bi-check-circle me-2"></i>
-                            Update Room
+                            <i class="bi bi-check-circle me-2"></i>Update Room
                         </button>
                     </div>
                 </EditForm>
@@ -354,8 +338,7 @@
         <div class="modal-container confirm-dialog" @onclick:stopPropagation="true">
             <div class="modal-header">
                 <h3 class="modal-title">
-                    <i class="bi bi-exclamation-triangle me-2"></i>
-                    Confirm Action
+                    <i class="bi bi-exclamation-triangle me-2"></i>Confirm Action
                 </h3>
                 <button class="modal-close" @onclick="CancelConfirmDialog">
                     <i class="bi bi-x-lg"></i>
@@ -366,12 +349,10 @@
             </div>
             <div class="modal-footer">
                 <button class="btn-modern btn-cancel" @onclick="CancelConfirmDialog">
-                    <i class="bi bi-x-circle me-2"></i>
-                    Cancel
+                    <i class="bi bi-x-circle me-2"></i>Cancel
                 </button>
-                <button class="btn-modern @(IsDestructiveAction() ? "btn-confirm-destructive" : "btn-confirm")" @onclick="ExecuteConfirmedAction">
-                    <i class="bi bi-check-circle me-2"></i>
-                    Confirm
+                <button class="btn-modern @(IsDestructiveAction() ? "btn-confirm-destructive" : "btn-confirm")" @onclick="async () => await ExecuteConfirmedActionAsync()">
+                    <i class="bi bi-check-circle me-2"></i>Confirm
                 </button>
             </div>
         </div>
@@ -379,204 +360,288 @@
 }
 
 @code {
-    private RoomModel roomModel = new();
-    private List<RoomModel> roomList = new();
-    private List<RoomModel> filteredRoomList = new();
-    private List<RoomModel> archivedRoomList = new();
+    private Room roomModel = new();
+    private List<Room> roomList = new();
+    private List<Room> filteredRoomList = new();
     private string searchQuery = string.Empty;
     private string statusFilter = string.Empty;
     private bool showAddModal = false;
     private bool showEditModal = false;
-    private int nextId = 1;
     private bool showConfirmDialog = false;
     private string confirmAction = string.Empty;
     private string confirmMessage = string.Empty;
-    private RoomModel? roomToArchive;
+    private Room? roomToDelete;
+    private bool isLoading = false;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        filteredRoomList = roomList;
+        await LoadRoomsAsync();
+    }
+
+    private async Task LoadRoomsAsync()
+    {
+        try
+        {
+            isLoading = true;
+            roomList = await RoomService.GetAllRoomsAsync();
+            filteredRoomList = roomList;
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading rooms: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
     }
 
     private void OpenAddModal()
     {
-        roomModel = new RoomModel();
+        roomModel = new Room();
         showAddModal = true;
     }
 
     private void CloseAddModal()
     {
         showAddModal = false;
-        roomModel = new RoomModel();
+        roomModel = new Room();
     }
 
-    private void OpenEditModal(RoomModel room)
+    private async Task OpenEditModalAsync(Room room)
     {
-        roomModel = new RoomModel
+        try
         {
-            Id = room.Id,
-            RoomName = room.RoomName,
-            RoomType = room.RoomType,
-            Capacity = room.Capacity,
-            Status = room.Status,
-            Description = room.Description,
-            CreatedAt = room.CreatedAt,
-            UpdatedAt = room.UpdatedAt
-        };
-        showEditModal = true;
+            var roomFromDb = await RoomService.GetRoomByIdAsync(room.Id);
+            if (roomFromDb == null)
+            {
+                Console.WriteLine($"Room with Id {room.Id} not found.");
+                return;
+            }
+
+            roomModel = new Room
+            {
+                Id = roomFromDb.Id,
+                RoomName = roomFromDb.RoomName,
+                RoomType = roomFromDb.RoomType,
+                Capacity = roomFromDb.Capacity,
+                Status = roomFromDb.Status,
+                Description = roomFromDb.Description,
+                CreatedAt = roomFromDb.CreatedAt,
+                UpdatedAt = roomFromDb.UpdatedAt
+            };
+            showEditModal = true;
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error opening edit modal: {ex.Message}");
+        }
     }
 
-    private void CloseEditModal()
+    private void OpenEditModal(Room room)
     {
-        showEditModal = false;
-        roomModel = new RoomModel();
+        _ = OpenEditModalAsync(room);
     }
+
+    private void CloseEditModal() => showEditModal = false;
 
     private void ConfirmAddRoom()
     {
-        if (string.IsNullOrEmpty(roomModel.RoomName) || string.IsNullOrEmpty(roomModel.RoomType))
+        if (string.IsNullOrWhiteSpace(roomModel.RoomName) || string.IsNullOrWhiteSpace(roomModel.RoomType) || roomModel.Capacity <= 0)
         {
             return;
         }
+
         confirmAction = "add";
-        confirmMessage = $"Are you sure you want to add a new room: {roomModel.RoomName}?";
+        confirmMessage = $"Are you sure you want to add room: {roomModel.RoomName}?";
         showConfirmDialog = true;
     }
 
-    private void SaveRoom()
+    private async Task SaveRoomAsync()
+    {
+        try
         {
-            roomModel.Id = nextId++;
-        roomModel.CreatedAt = DateTime.Now;
-        roomModel.UpdatedAt = DateTime.Now;
-            roomList.Add(new RoomModel
+            if (string.IsNullOrWhiteSpace(roomModel.RoomName) || string.IsNullOrWhiteSpace(roomModel.RoomType) || roomModel.Capacity <= 0)
             {
-                Id = roomModel.Id,
-            RoomName = roomModel.RoomName,
-                RoomType = roomModel.RoomType,
-            Capacity = roomModel.Capacity,
-            Status = roomModel.Status,
-            Description = roomModel.Description,
-            CreatedAt = roomModel.CreatedAt,
-            UpdatedAt = roomModel.UpdatedAt
-        });
+                Console.WriteLine("Validation failed: Room name, type, and capacity are required.");
+                return;
+            }
 
-        CloseAddModal();
-        FilterRooms();
+            var newRoom = await RoomService.AddRoomAsync(roomModel);
+            if (newRoom != null)
+            {
+                CloseAddModal();
+                await LoadRoomsAsync();
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error saving room: {ex.Message}");
+            StateHasChanged();
+        }
     }
 
     private void ConfirmUpdateRoom()
     {
-        if (string.IsNullOrEmpty(roomModel.RoomName) || string.IsNullOrEmpty(roomModel.RoomType))
-        {
-            return;
-        }
         confirmAction = "update";
         confirmMessage = $"Are you sure you want to update room: {roomModel.RoomName}?";
         showConfirmDialog = true;
     }
 
-    private void UpdateRoom()
+    private async Task UpdateRoomAsync()
+    {
+        try
         {
-            var existing = roomList.FirstOrDefault(r => r.Id == roomModel.Id);
-            if (existing != null)
+            if (string.IsNullOrWhiteSpace(roomModel.RoomName) || string.IsNullOrWhiteSpace(roomModel.RoomType))
             {
-            existing.RoomName = roomModel.RoomName;
-                existing.RoomType = roomModel.RoomType;
-                existing.Capacity = roomModel.Capacity;
-            existing.Status = roomModel.Status;
-            existing.Description = roomModel.Description;
-            existing.UpdatedAt = DateTime.Now;
+                return;
+            }
+
+            await RoomService.UpdateRoomAsync(roomModel);
+            CloseEditModal();
+            await LoadRoomsAsync();
+            StateHasChanged();
         }
-
-        CloseEditModal();
-        FilterRooms();
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error updating room: {ex.Message}");
+            StateHasChanged();
+        }
     }
 
-    private void ViewRoomDetails(RoomModel room)
+    private void ConfirmArchiveRoom(Room room)
     {
-        OpenEditModal(room);
-    }
-
-    private void ConfirmArchiveRoom(RoomModel room)
-    {
-        roomToArchive = room;
+        roomToDelete = room;
         confirmAction = "archive";
-        confirmMessage = $"Are you sure you want to archive room: {room.RoomName}? This action cannot be undone.";
+        confirmMessage = $"Are you sure you want to archive room: {room.RoomName}? This will set the status to 'Archived'.";
         showConfirmDialog = true;
     }
 
-    private void ArchiveRoom(RoomModel room)
+    private async Task ArchiveRoomAsync()
     {
-        roomList.Remove(room);
-        archivedRoomList.Add(room);
-        FilterRooms();
+        if (roomToDelete != null)
+        {
+            try
+            {
+                await RoomService.ArchiveRoomAsync(roomToDelete.Id);
+                roomToDelete = null;
+                await LoadRoomsAsync();
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error archiving room: {ex.Message}");
+            }
+        }
     }
 
-    private void ExecuteConfirmedAction()
+    private void ConfirmDeleteRoom(Room room)
+    {
+        roomToDelete = room;
+        confirmAction = "delete";
+        confirmMessage = $"Are you sure you want to permanently delete room: {room.RoomName}? This action cannot be undone and will remove the record from the database.";
+        showConfirmDialog = true;
+    }
+
+    private async Task DeleteRoomAsync()
+    {
+        if (roomToDelete != null)
+        {
+            try
+            {
+                await RoomService.DeleteRoomAsync(roomToDelete.Id);
+                roomToDelete = null;
+                await LoadRoomsAsync();
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error deleting room: {ex.Message}");
+            }
+        }
+    }
+
+    private async Task ExecuteConfirmedActionAsync()
     {
         showConfirmDialog = false;
         switch (confirmAction)
         {
-            case "add":
-                SaveRoom();
+            case "add": 
+                await SaveRoomAsync(); 
                 break;
-            case "update":
-                UpdateRoom();
+            case "update": 
+                await UpdateRoomAsync(); 
                 break;
-            case "archive":
-                if (roomToArchive != null)
-                {
-                    ArchiveRoom(roomToArchive);
-                    roomToArchive = null;
-                }
+            case "archive": 
+                await ArchiveRoomAsync(); 
+                break;
+            case "delete": 
+                await DeleteRoomAsync(); 
                 break;
         }
         confirmAction = string.Empty;
         confirmMessage = string.Empty;
     }
 
-    private bool IsDestructiveAction()
-    {
-        return confirmAction == "archive" || confirmAction == "delete";
-    }
+    private bool IsDestructiveAction() => confirmAction == "delete" || confirmAction == "archive";
 
     private void CancelConfirmDialog()
     {
         showConfirmDialog = false;
         confirmAction = string.Empty;
         confirmMessage = string.Empty;
-        roomToArchive = null;
+        roomToDelete = null;
     }
 
-    private void FilterRooms()
+    private async Task FilterRoomsAsync()
     {
-        filteredRoomList = roomList.Where(room =>
-            (string.IsNullOrEmpty(searchQuery) ||
-             room.RoomName.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
-             room.RoomType.Contains(searchQuery, StringComparison.OrdinalIgnoreCase)) &&
-            (string.IsNullOrEmpty(statusFilter) || room.Status == statusFilter)
-        ).ToList();
+        try
+        {
+            if (string.IsNullOrWhiteSpace(searchQuery) && string.IsNullOrWhiteSpace(statusFilter))
+            {
+                filteredRoomList = await RoomService.GetAllRoomsAsync();
+            }
+            else if (!string.IsNullOrWhiteSpace(statusFilter))
+            {
+                filteredRoomList = await RoomService.GetRoomsByStatusAsync(statusFilter);
+                if (!string.IsNullOrWhiteSpace(searchQuery))
+                {
+                    filteredRoomList = filteredRoomList.Where(room =>
+                        room.RoomName.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                        (room.RoomType != null && room.RoomType.Contains(searchQuery, StringComparison.OrdinalIgnoreCase))
+                    ).ToList();
+                }
+            }
+            else
+            {
+                filteredRoomList = await RoomService.SearchRoomsAsync(searchQuery);
+                if (!string.IsNullOrWhiteSpace(statusFilter))
+                {
+                    filteredRoomList = filteredRoomList.Where(r => r.Status == statusFilter).ToList();
+                }
+            }
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error filtering rooms: {ex.Message}");
+        }
     }
 
-    private void ClearFilters()
+    private async Task ClearFiltersAsync()
     {
         searchQuery = string.Empty;
         statusFilter = string.Empty;
-        FilterRooms();
+        await FilterRoomsAsync();
     }
 
-    public class RoomModel
-    {
-        public int Id { get; set; }
-        public string RoomName { get; set; } = string.Empty;
-        public string RoomType { get; set; } = string.Empty;
-        public int Capacity { get; set; }
-        public string Status { get; set; } = string.Empty;
-        public string Description { get; set; } = string.Empty;
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
-        public DateTime UpdatedAt { get; set; } = DateTime.Now;
-    }
+    private void ViewRoomDetails(Room room) => OpenEditModal(room);
 }
+
 
 <style>
     .rooms-container {
@@ -992,6 +1057,18 @@
         transform: translateY(-2px);
     }
 
+    .btn-archive {
+        background: #fef3c7;
+        color: #d97706;
+    }
+
+    .btn-archive:hover {
+        background: #fde68a;
+        color: #b45309;
+        box-shadow: 0 4px 8px rgba(217, 119, 6, 0.2);
+        transform: translateY(-2px);
+    }
+
     .btn-delete {
         background: #fee2e2;
         color: #dc2626;
@@ -1266,3 +1343,4 @@
         }
     }
 </style>
+
